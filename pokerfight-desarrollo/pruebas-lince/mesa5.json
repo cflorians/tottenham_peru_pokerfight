@@ -1,0 +1,21 @@
+{
+  "nombre": "lince-mesa-de-5",
+  "formato": "mesa-unica",
+  "puntuacion": "neto",
+  "manos_por_enfrentamiento": 50,
+  "ida_y_vuelta": false,
+  "reponer_stack": false,
+  "semilla": 101,
+  "paralelismo": 1,
+  "penalizacion_timeout": 0,
+  "guardar_historial": true,
+  "salida": "pruebas-lince/resultados",
+  "mesa": { "ciega_chica": 50, "ciega_grande": 100, "stack": 10000, "timeout_ms": 5000, "espera_jugadores_ms": 15000 },
+  "participantes": [
+    { "id": "lince",       "nombre": "Lince",           "comando": ["./bin/lince", "-silencioso", "-sin-archivos", "-una-partida"] },
+    { "id": "darwin",      "nombre": "Gato Darwin",     "comando": ["./bin/darwin", "-silencioso"] },
+    { "id": "espia",       "nombre": "Michi Espia",     "comando": ["./bin/espia", "-silencioso"] },
+    { "id": "estadistico", "nombre": "Bot Estadistico", "comando": ["./bin/estadistico", "-simulaciones", "2000"] },
+    { "id": "base",        "nombre": "Bot Base",        "comando": ["./bin/base"] }
+  ]
+}

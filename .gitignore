@@ -1,0 +1,35 @@
+# Dependencias y entornos
+node_modules/
+__pycache__/
+.venv/
+
+# Secretos: el token del equipo NUNCA se sube
+.env
+.env.*
+*.pem
+*.key
+*.token
+
+# Binarios y compilados
+bin/
+*.exe
+*.test
+*.out
+
+# Logs y artefactos de pruebas (pueden traer el token en la linea de comando)
+*.log
+*.tmp
+pokerfight-desarrollo/pruebas-lince/robustez-*/
+pokerfight-desarrollo/pruebas-lince/resultados/
+resultados/
+
+# Estado del bot en ejecucion
+pokerfight-desarrollo/bots/lince/datos/
+biblioteca.cache
+
+# Editores, sistema y configuracion local de Claude Code
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.claude/settings.local.json

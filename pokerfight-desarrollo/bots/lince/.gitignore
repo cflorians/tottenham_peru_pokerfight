@@ -1,0 +1,3 @@
+# Estado del torneo y logs del bot: no se versionan (pueden traer el token en la linea de comando del log).
+datos/
+biblioteca.cache
