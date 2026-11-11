@@ -9,18 +9,19 @@ Este archivo tiene lo común. La estrategia está en dos planes:
 
 ## Estado
 
-_Última actualización: mar 10/11/2026 (Fase 0 hecha: existe la v0)._
+_Última actualización: mar 10/11/2026 (Fase 0 hecha: existe la v0; repositorio en GitHub y flujo de equipo)._
 
 - Hecho: análisis de las bases y de la guía, 90 mesas de prueba en el formato real
   (`Simulaciones/pruebas_formato_real.md`), prueba del genoma prudente (`Simulaciones/genoma_prudente.json`)
   y revisión del plan contra las bases y el código del kit.
-- **Fase 0 hecha.** El bot está en `pokerfight-desarrollo/bots/lince/` (rama git `lince`, etiqueta `v0`):
+- **Fase 0 hecha.** El bot está en `pokerfight-desarrollo/bots/lince/` (etiqueta git `v0`):
   Darwin con el genoma prudente más reconexión, `recover`, supervisor, estado en disco y log. Resultados en
   `Simulaciones/fase0_v0.md`. Quedan dos cosas de la Fase 0 que no son código: la prueba de silencio de
   varias horas y el correo con las preguntas.
 - **Próximo paso: Fase 1** (simulador de liga y de mesa final).
 - Nombre del bot: **Lince** es un nombre de trabajo; se puede cambiar (es renombrar la carpeta y los imports).
-- El plan original quedó en `PLAN-BOT.anterior.md` (se puede borrar).
+- **Equipo de 2 personas** (una con Claude Code, la otra con Codex) sobre un repositorio privado de GitHub.
+  Las reglas de trabajo en equipo están en [`AGENTS.md`](AGENTS.md); el reparto, en la sección 4.
 
 ## Reglas de trabajo
 
@@ -30,9 +31,11 @@ _Última actualización: mar 10/11/2026 (Fase 0 hecha: existe la v0)._
   se modifica: nuestro código va en `bots/<nuestro-bot>/` y en carpetas nuevas propias. Solo se puede editar
   `torneo-go.json`, para las pruebas locales.
 - Los resultados de las simulaciones se guardan en `Simulaciones/`.
-- **Control de versiones**: `pokerfight-desarrollo/` ya es un repositorio git (el del kit). Rama local propia,
-  un commit por cambio medido y una etiqueta por versión (`v0`, `v1`...). Nada a un remoto público: el token
-  es secreto.
+- **Control de versiones**: un solo repositorio git (esta carpeta), con remoto privado en GitHub. `master`
+  siempre entregable, ramas cortas por tarea (`a/...`, `b/...`, `comun/...`), integración por pull request,
+  un commit por cambio medido y una etiqueta por versión (`v0`, `v1`...). El repositorio no se hace público y
+  el token nunca se sube: es secreto. El detalle está en [`AGENTS.md`](AGENTS.md).
+- **Una sola conexión con el token del equipo a la vez**: avisar antes de conectar al servidor de pruebas.
 - Al terminar una tarea o cambiar una decisión, actualizar las casillas y el "Estado" del plan que corresponda.
 
 ## 1. Premios y objetivo
@@ -107,8 +110,27 @@ robustez.
 | sáb 21 | Entrega | | |
 | dom 22 | Torneo | | |
 
-Si son 2 o 3 en el equipo, A y B avanzan en paralelo desde el viernes 13. Si es una sola persona, el orden es
-el de la escalera de versiones.
+### Reparto del equipo (propuesta; confirmar entre los dos y anotar los nombres)
+
+Somos 2: A y B avanzan **en paralelo** desde el viernes 13. Cada persona es dueña de un plan y mantiene su
+"Estado"; el trabajo común se reparte así:
+
+| Trabajo | Responsable |
+| --- | --- |
+| Plan A · Clasificatoria (A1-A5, versiones v1 y v3) | Persona 1: _por definir_ |
+| Plan B · Mesa final (B1-B4, versiones v2 y v4) | Persona 2: _por definir_ |
+| Fase 1 · Simulador, nivel rápido: liga de 10 rondas | Persona 1 |
+| Fase 1 · Simulador, nivel rápido: mesa final (sobre la misma base) | Persona 2 |
+| Fase 1 · Nivel real (orquestador) y prueba de paridad | Quien termine antes su parte del nivel rápido |
+| Correo con las preguntas, prueba de silencio larga | _por definir_ |
+| Fase 5 · Ensayo general, congelamiento y entrega | Los dos juntos |
+
+- El simulador de la Fase 1 bloquea a los dos planes y toca los mismos archivos (`entrenamiento/`): acordar
+  primero la interfaz común (cómo se arrastran las fichas y cómo se define el final de una mesa) y fusionar
+  esa base antes de separar liga y mesa final.
+- Las pruebas de promoción miden siempre las métricas de los dos planes: quien promueve una versión corre
+  también la métrica del plan del otro.
+- Si una sola persona queda disponible, el orden es el de la escalera de versiones.
 
 ## 5. Trabajo común
 
@@ -241,7 +263,8 @@ prueba de silencio larga.
 
 ## Historial del plan
 
-- **v1 (original)**: un solo plan, centrado en sobrevivir la clasificatoria. En `PLAN-BOT.anterior.md`.
+- **v1 (original)**: un solo plan, centrado en sobrevivir la clasificatoria. Eliminado; queda en el historial
+  de git (commit inicial, `PLAN-BOT.anterior.md`).
 - **v2 (10/11)**: revisión de puntos débiles. El premio mayor se gana en la final, la meta de 10 % de quiebra
   por ronda no alcanza, las ciegas cuestan 15 000 fichas en 10 rondas, faltaba la regla de los últimos
   eliminados, el genoma prudente se retira con manos ganadoras, y no había versión entregable ni robustez

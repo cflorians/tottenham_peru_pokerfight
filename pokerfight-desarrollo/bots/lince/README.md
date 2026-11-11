@@ -4,7 +4,8 @@ Nombre de trabajo; se puede cambiar. Parte de **Gato Darwin** (`bots/darwin`, de
 números evolucionados por un algoritmo genético y fuerza de la mano por Monte Carlo.
 
 **Versión actual: v0.** Juega igual que Darwin con el genoma prudente (`Simulaciones/genoma_prudente.json`); lo
-nuevo es la infraestructura para aguantar el campeonato entero. El plan está en `../../../PLAN-BOT.md`.
+nuevo es la infraestructura para aguantar el campeonato entero. El plan está en `../../../PLAN-BOT.md` y las
+reglas de trabajo en equipo (ramas, PR, archivos compartidos, token) en `../../../AGENTS.md`.
 
 ## Qué agrega sobre Darwin
 
