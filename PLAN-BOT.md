@@ -9,7 +9,7 @@ Este archivo tiene lo común. La estrategia está en dos planes:
 
 ## Estado
 
-_Última actualización: sáb 14/11/2026 (v1 promovida; primera conexión al servidor de pruebas)._
+_Última actualización: sáb 14/11/2026 (v1.1 promovida; primera conexión al servidor de pruebas)._
 
 - Hecho: análisis de las bases y de la guía, 90 mesas de prueba en el formato real
   (`Simulaciones/pruebas_formato_real.md`), prueba del genoma prudente (`Simulaciones/genoma_prudente.json`)
@@ -28,6 +28,11 @@ _Última actualización: sáb 14/11/2026 (v1 promovida; primera conexión al ser
   en `genoma.json`; el de la v0 quedó en `genoma_v0.json`. Supera a la v0 en el simulador en los cuatro campos,
   en 300 mesas reales (neto +7 489 contra +5 136, misma quiebra) y sobre todo en la final: **gana el 78 % de
   60 finales reales** contra los bots del kit (v0: 30 %). Detalle en `Simulaciones/a2_b2_v1.md`.
+- **v1.1 promovida (sáb 14/11, Carlos)**: la v1 reentrenada valorando llegar a la final con la probabilidad
+  real de ganarla (`-m2 0.65` en vez de 0,20) y con Espía y Estadístico en los campos. En el simulador llega a
+  la final 10-13 puntos más que la v1 en los cuatro campos (84 % en el mixto con 20 inscritos) y la quiebra de
+  la ronda 1 baja de 15 % a 5 %. En la arena real: misma ganancia por ronda, quiebra 6 % contra 10 %, y 89 %
+  de 80 finales ganadas (v1: 82 %). Etiquetas git `v1` y `v1.1`.
 - **v2 (genoma aparte para la final): no se justifica por ahora.** El entrenado solo para finales no supera
   al de la v1 jugando finales. El bot ya cambia de genoma al detectar la final (`genoma_final.json`), pero hoy
   los dos archivos tienen el mismo genoma.
@@ -38,8 +43,9 @@ _Última actualización: sáb 14/11/2026 (v1 promovida; primera conexión al ser
   servidor cerró la conexión y dejó de responder (`Simulaciones/servidor_pruebas.md`). Los `id_mano` son
   `practica-r1-m01-mano-30` y el bot los lee bien. El ritmo fue de 3 manos por segundo: **la final se
   decidiría por eliminación, no por reloj**. Cómo conectarse y cómo guardar el token: `AGENTS.md`.
-- **Próximo paso**: bajar la quiebra de las rondas 1 y 2 (15 % y 8 % en el campo mixto; peor contra bots que
-  van all-in seguido) y seguir con la política nueva (A3). Falta avisar a la organización de las caídas del
+- **Próximo paso**: la política nueva (A3). Lo que más duele hoy son los campos con bots que van all-in
+  seguido (quiebra 12 % y 17 % en las rondas 1 y 2 del campo agresivo) y que, cuidando el stack, se termina
+  1.º menos veces en el campo tight. Falta avisar a la organización de las caídas del
   servidor, el correo con las preguntas y la prueba de silencio larga.
 - Nombre del bot: **Lince** es un nombre de trabajo; se puede cambiar (es renombrar la carpeta y los imports).
 - **Equipo de 2 personas** (una con Claude Code, la otra con Codex) sobre un repositorio privado de GitHub.
@@ -102,7 +108,7 @@ si no, se entrega la anterior.
 | Versión | Plan | Qué agrega | Lista para |
 | --- | --- | --- | --- |
 | **v0** | Común | Darwin + genoma prudente + infraestructura | mié 11 |
-| **v1** | A | Genes actuales reentrenados con fitness de liga. **Hecha y promovida el sáb 14** | vie 13 |
+| **v1** | A | Genes actuales reentrenados con fitness de liga. **Hecha el sáb 14; hoy juega la v1.1** | vie 13 |
 | **v2** | B | Genoma de la final y detección de la final. **Mecanismo hecho; el genoma aparte no supera al de la v1** | sáb 14 |
 | **v3** | A | Política nueva: rangos, tablas de valor, juego según el stack | lun 16 |
 | **v4** | B | Modo final completo: reloj, valor de la final, mesa corta | mar 17 |
@@ -287,8 +293,7 @@ exactamente lo entregado.
 
 ## 9. Próximo paso concreto
 
-A3 (política nueva), empezando por lo que más duele hoy: la quiebra de las rondas 1 y 2 y los choques con
-bots que van all-in seguido. En paralelo: dejar el bot conectado al servidor de pruebas cuando esté estable,
+A3 (política nueva), empezando por lo que más duele hoy: los choques con bots que van all-in seguido. En paralelo: dejar el bot conectado al servidor de pruebas cuando esté estable,
 avisar a la organización de las caídas, mandar el correo con las preguntas y la prueba de silencio larga.
 
 ## Historial del plan

@@ -5,7 +5,7 @@ Lo común (infraestructura, simulador, calendario, preguntas, riesgos) está en 
 
 ## Estado
 
-_Última actualización: vie 13/11/2026._ **B1 y B2 hechas** (`Simulaciones/a2_b2_v1.md`). El genoma de la v1 gana el **78 % de 60 finales reales** contra los bots del kit (v0: 30 %) y 68-76 % en el simulador con tope de 500 manos o sin tope. Un genoma entrenado solo para finales (`Simulaciones/genoma_final_b2.json`) no lo supera: la final se juega con el genoma de la v1. El bot ya cambia de genoma al detectar la final. En el servidor de pruebas se jugaron 3 manos por segundo: la final se decidiría por eliminación y el reloj (B3) pierde prioridad. Sigue B3, empezando por la mesa corta.
+_Última actualización: vie 13/11/2026._ **B1 y B2 hechas** (`Simulaciones/a2_b2_v1.md`). El genoma de la v1.1 gana el **89 % de 80 finales reales** contra los bots del kit (v1: 81 % de 140; v0: 30 % de 60) y 78-88 % en el simulador con tope de 500 manos o sin tope. Un genoma entrenado solo para finales (`Simulaciones/genoma_final_b2.json`) no lo supera: la final se juega con el genoma de la v1. El bot ya cambia de genoma al detectar la final. En el servidor de pruebas se jugaron 3 manos por segundo: la final se decidiría por eliminación y el reloj (B3) pierde prioridad. Sigue B3, empezando por la mesa corta.
 
 ## 1. Objetivo
 
@@ -83,8 +83,8 @@ Es barato: el entrenador ya existe, solo cambia el fitness.
 - [x] Rivales: los finalistas simulados, nuestro bot de clasificatoria y campeones de generaciones anteriores
       (coevolución).
 - [x] Detección de la final en su forma simple y cambio de genoma al detectarla (`genoma_final.json`).
-- [ ] Validar con `mesa-unica` en la arena real (mínimo 300 finales): van 60 por versión, con el genoma de
-      la v1. El genoma B2 no se promovió: no supera al de la v1 en el simulador.
+- [ ] Validar con `mesa-unica` en la arena real (mínimo 300 finales): van 80 con el genoma de la v1.1 y 140 con el
+      de la v1. El genoma B2 no se promovió: no supera al de la v1 en el simulador.
 
 ### B3 · Modo final completo (lun 16 - mar 17) → versión v4
 

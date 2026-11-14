@@ -5,7 +5,7 @@ Lo común (infraestructura, simulador, calendario, preguntas, riesgos) está en 
 
 ## Estado
 
-_Última actualización: vie 13/11/2026._ **A1 y A2 hechas; la v1 está promovida** (`Simulaciones/a2_b2_v1.md`). En el campo mixto con 20 inscritos (campos nuevos, con Espía y Estadístico): M1 de la v1 71,9 % (v0 53,1 %, Novato 65,3 %) y M1b 32,0 % (v0 7,9 %). En 300 mesas reales: neto +7 489 contra +5 136, quiebra 7,7 % contra 8,7 %. Punto flojo: quiebra 15 % en la ronda 1 y 8 % en la 2 (más contra bots que van all-in seguido). Sigue A3.
+_Última actualización: vie 13/11/2026._ **A1 y A2 hechas; juega la v1.1** (`Simulaciones/a2_b2_v1.md`). En el campo mixto con 20 inscritos (campos nuevos, con Espía y Estadístico): M1 de la v1.1 **84,4 %** (v1 71,9 %, v0 53,1 %, Novato 65,3 %) y M1b 34,2 % (v0 7,9 %). Quiebra por ronda en el mixto: 5,0 %, 5,8 %, 4,1 % y después por debajo de 2 %; en kit y tight ya está en la meta de 3 %. En mesas reales de una ronda quiebra el 6 % (v0: 9 %). Punto flojo: el campo agresivo (12 % y 17 % en las rondas 1 y 2) y que en el campo tight termina 1.º menos que la v1. Sigue A3.
 
 ## 1. Objetivo
 

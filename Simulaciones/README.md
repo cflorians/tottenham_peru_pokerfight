@@ -9,7 +9,7 @@ Resultados de pruebas y simulaciones del equipo. Los planes citan estos archivos
 | [`genoma_prudente.json`](genoma_prudente.json) | Genoma de Darwin con 4 genes ajustados a mano; es el que usa la v0 |
 | [`fase0_v0.md`](fase0_v0.md) | Resultados de Lince v0: mesas de torneo, no reproducibilidad de la arena, robustez |
 | [`a1_b1_linea_base.md`](a1_b1_linea_base.md) | Línea base en el simulador de liga y de mesa final: M1, M1b y M2 de la v0, Darwin original y Novato en 4 campos y 4 tamaños, curva de vivos por ronda, quién llega a la final y tablas de valor. Novato supera a la v0 |
-| [`a2_b2_v1.md`](a2_b2_v1.md) | **Lince v1**: genoma entrenado con el premio del torneo. Prueba de promoción en el simulador, 300 mesas reales y 60 finales reales por versión (gana el 78 % de las finales), réplicas de Espía y Estadístico y paridad del simulador |
+| [`a2_b2_v1.md`](a2_b2_v1.md) | **Lince v1 y v1.1**: genoma entrenado con el premio del torneo. Pruebas de promoción en el simulador, cientos de mesas y finales reales por versión (la v1.1 gana el 89 % de 80 finales), réplicas de Espía y Estadístico y paridad del simulador |
 | [`genoma_final_b2.json`](genoma_final_b2.json) | Genoma entrenado solo para ganar finales (B2). No supera al de la v1 en la final: no se usa |
 | [`servidor_pruebas.md`](servidor_pruebas.md) | Primera conexión al servidor de pruebas: token válido, forma de los `id_mano`, 3 manos por segundo, servidor inestable |
 

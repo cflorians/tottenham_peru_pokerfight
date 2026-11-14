@@ -3,7 +3,7 @@
 Nombre de trabajo; se puede cambiar. Parte de **Gato Darwin** (`bots/darwin`, de AICS PUCP): política con
 números evolucionados por un algoritmo genético y fuerza de la mano por Monte Carlo.
 
-**Versión actual: v1.** La política es la de Darwin, pero el genoma se entrenó con lo que premia el torneo
+**Versión actual: v1.1.** La política es la de Darwin, pero el genoma se entrenó con lo que premia el torneo
 (llegar a la final y terminar 1.º en ligas simuladas de 10 rondas) en vez de las fichas por mano, y alrededor
 está la infraestructura para aguantar el campeonato entero. Resultados: `Simulaciones/a2_b2_v1.md`. El plan está en `../../../PLAN-BOT.md` y las
 reglas de trabajo en equipo (ramas, PR, archivos compartidos, token) en `../../../AGENTS.md`.
@@ -58,7 +58,7 @@ primero, liga por liga, con su intervalo**: es la comparación de la prueba de p
 `entrenar-liga` evoluciona un genoma midiendo lo que premia el torneo, no las ciegas ganadas por mano:
 
 ```bash
-go run ./bots/lince/cmd/entrenar-liga -modo clasificatoria   # aptitud = premio esperado de la liga -> genoma_clasificatoria.json
+go run ./bots/lince/cmd/entrenar-liga -modo clasificatoria -m2 0.65   # aptitud = premio esperado de la liga -> genoma_clasificatoria.json
 go run ./bots/lince/cmd/entrenar-liga -modo final            # aptitud = % de mesas finales ganadas  -> genoma_final.json
 go run ./bots/lince/cmd/entrenar-liga -rapido                # prueba de humo (no escribe en la carpeta del bot)
 ```
@@ -137,8 +137,8 @@ recompilar con otras opciones (`-trimpath`, `-ldflags=-s`) suele dar un binario 
 | `cmd/simular-liga/` | Mide M1, M1b y M2 de un bot en miles de torneos simulados |
 | `entrenamiento/genetico_liga.go`, `cmd/entrenar-liga/` | Entrenador con aptitud de liga o de mesa final |
 | `pruebas/mesas.py` | Mesas reales en condiciones de torneo para comparar genomas |
-| `genoma.json` | Genoma de la clasificatoria (v1). Lo incluye el binario |
-| `genoma_final.json` | Genoma de la mesa final (hoy, el mismo de la v1). Lo incluye el binario |
+| `genoma.json` | Genoma de la clasificatoria (v1.1). Lo incluye el binario |
+| `genoma_final.json` | Genoma de la mesa final (hoy, el mismo de la v1.1). Lo incluye el binario |
 | `genoma_clasificatoria.json` | Última salida de `entrenar-liga -modo clasificatoria` (candidato; no lo usa el bot) |
 | `genoma_v0.json`, `genoma_darwin.json` | El prudente de la v0 y el original de Darwin: referencia y rivales del simulador |
 | `correr.ps1` | Supervisor |
