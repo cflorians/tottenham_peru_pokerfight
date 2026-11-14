@@ -5,7 +5,7 @@ Lo común (infraestructura, simulador, calendario, preguntas, riesgos) está en 
 
 ## Estado
 
-_Última actualización: mar 10/11/2026._ Nada empezado de este plan. La Fase 0 está hecha (v0 en `bots/lince`); depende del simulador (maestro).
+_Última actualización: vie 13/11/2026._ **B1 hecha en el simulador rápido** (`Simulaciones/a1_b1_linea_base.md`). M2 de la v0 en el campo mixto con 20 inscritos: 17,0 % / 12,6 % / 15,6 % (topes de 150, 500 y 5 000 manos), es decir, el azar o peor; Novato, 23-30 %. Los finalistas son sobre todo bots tight. Falta la validación en la arena real con `mesa-unica`. Sigue B2.
 
 ## 1. Objetivo
 
@@ -66,13 +66,14 @@ peso de "llegar a la final" en el premio esperado.
 
 ### B1 · Simulador de mesa final y línea base (mié 11 - vie 13, junto con el simulador de liga)
 
-- [ ] Mesa final en el simulador rápido: 6 jugadores, 10 000 fichas, hasta que quede uno o hasta un tope de
-      manos (150, 500, sin tope); al tope gana el que tiene más fichas.
+- [x] Mesa final en el simulador rápido (`entrenamiento.JugarFinal`): 6 jugadores, 10 000 fichas, hasta que
+      quede uno o hasta un tope de manos (150, 500, y 5 000 como "sin tope"); al tope gana el que tiene más fichas.
 - [ ] Nivel real sin construir nada: la arena del kit ya tiene el formato `mesa-unica` (hasta que quede uno).
       Configuración de 6 con 10 000 fichas y ciegas 50/100.
-- [ ] **Rivales de la final**: los tipos de bot que llegan a la final en las ligas simuladas del Plan A, con
-      su frecuencia, por campo.
-- [ ] M2 de Darwin original, del genoma prudente y de Novato contra esos rivales. Guardar en `Simulaciones/`.
+- [x] **Rivales de la final**: los tipos de bot que llegan a la final en las ligas simuladas del Plan A, con
+      su frecuencia, por campo. Llegan sobre todo novato y roca (~65 % de los suyos); maníacos y aleatorios, casi nunca.
+- [x] M2 de Darwin original, del genoma prudente y de Novato contra esos rivales (cada final se juega con los
+      finalistas de su propia liga). En `Simulaciones/a1_b1_linea_base.md`.
 - [ ] Tabla del valor de la final (probabilidad de ganar según fichas, vivos y manos restantes).
 
 ### B2 · Genoma de la final (noche del vie 13 - sáb 14) → versión v2

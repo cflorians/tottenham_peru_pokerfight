@@ -5,7 +5,7 @@ Lo común (infraestructura, simulador, calendario, preguntas, riesgos) está en 
 
 ## Estado
 
-_Última actualización: mar 10/11/2026._ Nada empezado de este plan. La Fase 0 está hecha (v0 en `bots/lince`); depende del simulador de liga (maestro).
+_Última actualización: vie 13/11/2026._ **A1 hecha** (`Simulaciones/a1_b1_linea_base.md`). En el campo mixto con 20 inscritos: M1 de la v0 57,8 %, Darwin original 35,8 %, Novato 66,2 %. La v0 quiebra 13-18 % por ronda en las rondas 2 a 6 y Novato la supera en todos los campos: la v1 tiene que ganarle a Novato. Sigue A2.
 
 ## 1. Objetivo
 
@@ -91,11 +91,14 @@ Cada paso se mide contra la versión anterior con la prueba de promoción del ma
 
 ### A1 · Línea base (mié 11 - vie 13, junto con el simulador)
 
-- [ ] Campos de prueba **kit**, **agresivo**, **tight** y **mixto**, con N = 15, 20, 30 y 40.
-- [ ] Curva de bots vivos por ronda y ronda en que quedan 6 o menos, por campo.
-- [ ] Fichas del 6.º y del 1.º al terminar la ronda 10, por campo.
-- [ ] Tablas `P(final)` y `P(1.º)` por ronda y stack relativo.
-- [ ] M1 y M1b de v0 (genoma prudente), de Darwin original y de Novato. Guardar en `Simulaciones/`.
+- [x] Campos de prueba **kit**, **agresivo**, **tight** y **mixto**, con N = 15, 20, 30 y 40 (`entrenamiento/campos.go`).
+- [x] Curva de bots vivos por ronda y ronda en que quedan 6 o menos, por campo. Con 20 inscritos, a la
+      ronda 4 ya quedan 6 o menos en el 82-100 % de las ligas, salvo en el campo tight.
+- [x] Fichas del 6.º y del 1.º al terminar la ronda 10, por campo. Solo en el campo tight llegan 6 con
+      fichas (la mitad de las veces); el corte está en ~10 400.
+- [x] Tablas `P(final)` y `P(1.º)` por ronda y stack relativo (impresas con `-tabla`; todavía no están en un
+      formato que el bot pueda leer).
+- [x] M1 y M1b de v0 (genoma prudente), de Darwin original y de Novato. En `Simulaciones/a1_b1_linea_base.md`.
 
 ### A2 · Reentrenar lo que ya existe (vie 13) → versión v1
 

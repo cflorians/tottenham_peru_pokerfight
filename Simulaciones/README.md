@@ -8,6 +8,7 @@ Resultados de pruebas y simulaciones del equipo. Los planes citan estos archivos
 | [`pruebas_formato_real.md`](pruebas_formato_real.md) | 90 mesas de 5-6 en condiciones de una ronda de la clasificatoria. De aquí sale que Darwin original quiebra en el 44 % de las mesas y el genoma prudente en el 10 % |
 | [`genoma_prudente.json`](genoma_prudente.json) | Genoma de Darwin con 4 genes ajustados a mano; es el que usa la v0 |
 | [`fase0_v0.md`](fase0_v0.md) | Resultados de Lince v0: mesas de torneo, no reproducibilidad de la arena, robustez |
+| [`a1_b1_linea_base.md`](a1_b1_linea_base.md) | Línea base en el simulador de liga y de mesa final: M1, M1b y M2 de la v0, Darwin original y Novato en 4 campos y 4 tamaños, curva de vivos por ronda, quién llega a la final y tablas de valor. Novato supera a la v0 |
 
 ## Cómo agregar un resultado
 

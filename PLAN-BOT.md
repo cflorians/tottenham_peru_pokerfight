@@ -9,7 +9,7 @@ Este archivo tiene lo común. La estrategia está en dos planes:
 
 ## Estado
 
-_Última actualización: mar 10/11/2026 (Fase 0 hecha: existe la v0; repositorio en GitHub y flujo de equipo)._
+_Última actualización: vie 13/11/2026 (Fase 1: simulador rápido hecho y líneas base medidas; falta el nivel real)._
 
 - Hecho: análisis de las bases y de la guía, 90 mesas de prueba en el formato real
   (`Simulaciones/pruebas_formato_real.md`), prueba del genoma prudente (`Simulaciones/genoma_prudente.json`)
@@ -18,7 +18,17 @@ _Última actualización: mar 10/11/2026 (Fase 0 hecha: existe la v0; repositorio
   Darwin con el genoma prudente más reconexión, `recover`, supervisor, estado en disco y log. Resultados en
   `Simulaciones/fase0_v0.md`. Quedan dos cosas de la Fase 0 que no son código: la prueba de silencio de
   varias horas y el correo con las preguntas.
-- **Próximo paso: Fase 1** (simulador de liga y de mesa final).
+- **Fase 1, nivel rápido hecho (vie 13/11, Carlos)**: liga de 10 rondas y mesa final en
+  `bots/lince/entrenamiento/liga.go`, campos de rivales en `campos.go` y la herramienta
+  `bots/lince/cmd/simular-liga` (M1, M1b, M2, quiebra por ronda, tablas de valor). Líneas base en
+  `Simulaciones/a1_b1_linea_base.md`. **Lo que dicen**: Novato supera a la v0 en todo (U de 15,2 contra 7,2 en
+  el campo mixto con 20 inscritos), la v0 juega la final peor que el azar, y casi nunca llegan 6 con fichas a
+  la ronda 10: clasifican los últimos eliminados.
+- **Servidor de pruebas**: el token del equipo ya llegó (no está en el repositorio). El vie 13/11 la guía marca
+  el servidor como disponible en `32.201.29.142:9000`, pero la conexión TCP no respondió desde dos redes
+  distintas. Falta avisar a la organización y reintentar.
+- **Próximo paso**: A2 (reentrenar los genes con fitness de liga → v1) y B2 (genoma de la final → v2). Queda
+  de la Fase 1 el nivel real (orquestador y prueba de paridad con fichas arrastradas).
 - Nombre del bot: **Lince** es un nombre de trabajo; se puede cambiar (es renombrar la carpeta y los imports).
 - **Equipo de 2 personas** (una con Claude Code, la otra con Codex) sobre un repositorio privado de GitHub.
   Las reglas de trabajo en equipo están en [`AGENTS.md`](AGENTS.md); el reparto, en la sección 4.
@@ -178,11 +188,15 @@ La arena del kit no juega 10 rondas con fichas arrastradas. Herramienta propia e
 
 **Nivel rápido** (para entrenar), sobre el simulador de `entrenamiento/`:
 
-- [ ] Liga de N bots: sorteo de mesas de 5-6, 10 rondas de 50 manos, fichas arrastradas (`jugarTorneo` ya
-      acepta stacks distintos por mano; falta arrastrarlos entre rondas), eliminación, y el corte real:
-      top 6 por fichas o, si quedan menos de 6, los últimos eliminados.
-- [ ] Mesa final: 6 jugadores, 10 000 fichas, hasta que quede uno o hasta un tope de manos.
-- [ ] Reporte por bot: M1, M1b, M2, supervivencia por ronda, fichas finales, ronda de eliminación.
+- [x] Liga de N bots (`entrenamiento.JugarLiga`): sorteo de mesas de 5-6, 10 rondas de 50 manos, fichas
+      arrastradas, eliminación, y el corte real: top 6 por fichas o, si quedan menos de 6, los últimos
+      eliminados. Los supuestos donde las bases callan están comentados en `liga.go` (preguntas 2 a 4).
+- [x] Mesa final (`entrenamiento.JugarFinal`): 6 jugadores, 10 000 fichas, hasta que quede uno o hasta un
+      tope de manos.
+- [x] Reporte por bot (`cmd/simular-liga`): M1, M1b, M2, quiebra por ronda, fichas finales, y del campo:
+      vivos por ronda, fichas del 1.º y del 6.º, quién llega a la final, tablas de valor.
+- [ ] Comparación pareada de dos versiones (diferencia con su intervalo): hace falta para la prueba de
+      promoción. Hoy `simular-liga` da cada bot con su intervalo por separado.
 
 **Nivel real** (para validar), con los `.exe` y la mesa de verdad:
 
@@ -257,9 +271,10 @@ exactamente lo entregado.
 
 ## 9. Próximo paso concreto
 
-Fase 1: el simulador de liga y de mesa final. De él salen las líneas base, las tablas de valor y los rivales
-de entrenamiento de los dos planes. En paralelo, mandar el correo con las preguntas y dejar una noche la
-prueba de silencio larga.
+A2 y B2: usar `JugarLiga` y `JugarFinal` como fitness del entrenador (hoy mide bb/100) y reentrenar. La vara
+para la v1 es **Novato**, que hoy supera a la v0 en el simulador. En paralelo: avisar a la organización que el
+servidor de pruebas no responde, mandar el correo con las preguntas, la prueba de silencio larga y el nivel
+real del simulador (prueba de paridad).
 
 ## Historial del plan
 

@@ -33,6 +33,21 @@ python bots/lince/pruebas/robustez.py
 detección de la final y que matar el proceso a mitad de una mesa no pierde nada (~2 minutos; con
 `-silencio 3600` deja al bot una hora conectado sin partida).
 
+## Simular el torneo entero
+
+`simular-liga` juega miles de torneos completos (clasificatoria de 10 rondas y mesa final) en el simulador
+rápido y reporta, en markdown, las métricas del plan: M1 (llega a la final), M1b (termina 1.º) y M2 (gana la
+final). La primera corrida precalcula una biblioteca de repartos (unos minutos) y la guarda en `datos/`.
+
+```bash
+go run ./bots/lince/cmd/simular-liga                         # v0, Darwin original y Novato; 4 campos; 20 inscritos
+go run ./bots/lince/cmd/simular-liga -n 15,20,30,40 -tabla   # todos los tamaños y las tablas de valor
+go run ./bots/lince/cmd/simular-liga -heroes v0,otro.json    # comparar un genoma nuevo con la v0
+```
+
+Los supuestos donde las bases no dicen nada (orden de los eliminados, mesas con pocos jugadores) están
+comentados en `entrenamiento/liga.go`. Resultados de referencia: `Simulaciones/a1_b1_linea_base.md`.
+
 ## Correrlo
 
 En una mesa o un torneo de la arena local (termina cuando la mesa cierra, no escribe archivos):
@@ -88,6 +103,8 @@ recompilar con otras opciones (`-trimpath`, `-ldflags=-s`) suele dar un binario 
 | `torneo/` | Contexto de torneo y estado en disco |
 | `estrategia/` | Genoma, política y fuerza (sin cambios respecto de Darwin) |
 | `entrenamiento/`, `cmd/entrenar-lince/` | Entrenador genético (sin cambios respecto de Darwin) |
+| `entrenamiento/liga.go`, `campos.go` | Simulador del torneo entero: liga de 10 rondas con fichas arrastradas, mesa final y campos de rivales |
+| `cmd/simular-liga/` | Mide M1, M1b y M2 de un bot en miles de torneos simulados |
 | `genoma.json` | Genoma con el que juega (v0: el prudente). `genoma_darwin.json` es el original |
 | `correr.ps1` | Supervisor |
 | `pruebas/robustez.py` | Prueba de robustez contra la mesa real |
