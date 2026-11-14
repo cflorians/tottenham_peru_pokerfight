@@ -43,6 +43,13 @@ _Última actualización: sáb 14/11/2026 (v1.1 promovida; primera conexión al s
   servidor cerró la conexión y dejó de responder (`Simulaciones/servidor_pruebas.md`). Los `id_mano` son
   `practica-r1-m01-mano-30` y el bot los lee bien. El ritmo fue de 3 manos por segundo: **la final se
   decidiría por eliminación, no por reloj**. Cómo conectarse y cómo guardar el token: `AGENTS.md`.
+- **Registro de manos y perfil de rivales (sáb 14/11)**: el bot graba cada mano completa y
+  `pruebas/rivales.py` resume cómo juega cada rival. La v1.1 quedó con el supervisor reintentando la conexión
+  al servidor de pruebas, que sigue caído desde las 13:02. **Prioridad del equipo: lo que pase en el servidor
+  de pruebas** (ver cómo juegan los otros equipos y recalibrar los campos del simulador).
+- **Corregido**: si el bot volvía a mitad de una mano, la mesa no le repetía sus cartas y la decisión
+  fallaba (jugaba la acción segura con un error en el log). Ahora guarda sus cartas en memoria y en disco y
+  sigue la mano. Lo destapó la prueba de robustez.
 - **Próximo paso**: la política nueva (A3). Lo que más duele hoy son los campos con bots que van all-in
   seguido (quiebra 12 % y 17 % en las rondas 1 y 2 del campo agresivo) y que, cuidando el stack, se termina
   1.º menos veces en el campo tight. Falta avisar a la organización de las caídas del

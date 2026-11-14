@@ -5,6 +5,8 @@ import (
 	"context"
 	"io"
 	"log"
+	"math/rand/v2"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -108,5 +110,46 @@ func TestEsperaDeReconexion(t *testing.T) {
 	// Tras una conexión que duró, vuelve al mínimo.
 	if e := siguienteEspera(espera, 10*time.Minute); e != time.Second {
 		t.Fatalf("tras una conexión larga la espera es %s; se esperaba 1s", e)
+	}
+}
+
+// Al volver a mitad de una mano la mesa no repite las cartas propias: el bot
+// las recupera de lo que guardó en mano_inicio, también tras un reinicio.
+func TestRecuperaLasCartasAlVolverAMitadDeLaMano(t *testing.T) {
+	var salida bytes.Buffer
+	dir := t.TempDir()
+	turno := turnoPostflop(botsdk.Check, botsdk.Bet, botsdk.AllIn)
+	cartas := turno.Mano
+	turno.Mano = botsdk.Mano{} // Lo que llega tras reconectar: sin cartas.
+
+	// Sin nada guardado: acción segura y un aviso, sin pánico.
+	b := botDePrueba(&salida)
+	b.azar = rand.New(rand.NewPCG(1, 2))
+	if a := b.Decidir(context.Background(), turno); a.Tipo != botsdk.Check {
+		t.Fatalf("sin cartas jugó %s", a.Tipo)
+	}
+	if strings.Contains(salida.String(), "PÁNICO") || !strings.Contains(salida.String(), "sin cartas propias") {
+		t.Fatalf("log inesperado: %s", salida.String())
+	}
+
+	// Con las cartas guardadas en disco por un proceso anterior: se recuperan.
+	b.rutaMano = filepath.Join(dir, "mano.json")
+	b.guardarMano(turno.Estado.IDMano, cartas)
+	salida.Reset()
+	otro := botDePrueba(&salida)
+	otro.azar = rand.New(rand.NewPCG(1, 2))
+	otro.rutaMano = b.rutaMano
+	otro.leerMano()
+	otro.Decidir(context.Background(), turno)
+	if !strings.Contains(salida.String(), "recuperadas") || strings.Contains(salida.String(), "PÁNICO") {
+		t.Fatalf("no recuperó las cartas: %s", salida.String())
+	}
+
+	// Las cartas de otra mano no sirven.
+	salida.Reset()
+	turno.Estado.IDMano = "mesa-1-mano-2"
+	otro.Decidir(context.Background(), turno)
+	if !strings.Contains(salida.String(), "sin cartas propias") {
+		t.Fatalf("usó cartas de otra mano: %s", salida.String())
 	}
 }

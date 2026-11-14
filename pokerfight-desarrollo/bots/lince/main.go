@@ -81,6 +81,14 @@ type lince struct {
 	final    estrategia.Genoma // Mesa final.
 	azar     *rand.Rand
 	contexto *torneo.Contexto
+	registro *registroManos // nil con -sin-archivos.
+
+	// Las cartas propias solo llegan en mano_inicio. Si la conexión (o el
+	// proceso) se corta a mitad de una mano, al volver la mesa pide jugar sin
+	// repetirlas: se guardan aquí y en disco para poder seguir la mano.
+	manoID     string
+	manoCartas botsdk.Mano
+	rutaMano   string // Vacía con -sin-archivos.
 
 	eventos *log.Logger // Lo que importa siempre: conexión, mesas, errores. Terminal y archivo.
 	detalle *log.Logger // Cada decisión. Archivo, y terminal salvo -silencioso.
@@ -108,10 +116,18 @@ func (b *lince) preparar() (cerrar func(), err error) {
 		if err != nil {
 			return cerrar, fmt.Errorf("no se pudo abrir el log %s: %w", rutaLog, err)
 		}
-		cerrar = func() { archivo.Close() }
+		// Cada mano completa, con las acciones de todos: para estudiar a los rivales.
+		registro, err := abrirRegistroManos(filepath.Join(*dirDatos, "manos-"+time.Now().Format("20060102")+".jsonl"))
+		if err != nil {
+			return cerrar, fmt.Errorf("no se pudo abrir el registro de manos: %w", err)
+		}
+		b.registro = registro
+		cerrar = func() { archivo.Close(); registro.cerrar() }
 		salidaEventos = io.MultiWriter(os.Stderr, archivo)
 		salidaDetalle = io.MultiWriter(salidaDetalle, archivo)
 		rutaEstado = filepath.Join(*dirDatos, "estado.json")
+		b.rutaMano = filepath.Join(*dirDatos, "mano.json")
+		b.leerMano()
 	}
 	b.eventos = log.New(salidaEventos, "", log.LstdFlags|log.Lmicroseconds)
 	b.detalle = log.New(salidaDetalle, "", log.LstdFlags|log.Lmicroseconds)
@@ -215,6 +231,7 @@ func accionSegura(t botsdk.Turno) botsdk.Accion {
 func (b *lince) decidir(ctx context.Context, t botsdk.Turno) botsdk.Accion {
 	b.contexto.Identificar(t.IDJugador)
 	b.contexto.Observar(t.Estado)
+	b.registro.observar(t.Estado)
 
 	// Se reserva como mucho un cuarto del plazo para pensar: el resto es
 	// margen para la red. Pasarse significa que la mesa juega por nosotros.
@@ -227,7 +244,18 @@ func (b *lince) decidir(ctx context.Context, t botsdk.Turno) botsdk.Accion {
 		limite = plazo
 	}
 
-	fuerza := estrategia.FuerzaConPlazo(t.Mano, t.Estado.Comunitarias, *muestras, limite, b.azar)
+	mano := t.Mano
+	if !cartasValidas(mano) {
+		if b.manoID != t.Estado.IDMano || !cartasValidas(b.manoCartas) {
+			accion := accionSegura(t)
+			b.eventos.Printf("SIN CARTAS: turno de la mano %s sin cartas propias (la mano se repartió mientras no estábamos): se juega %s", t.Estado.IDMano, accion.Tipo)
+			return accion
+		}
+		mano = b.manoCartas
+		b.eventos.Printf("cartas de la mano %s recuperadas tras volver a mitad de la mano", t.Estado.IDMano)
+	}
+
+	fuerza := estrategia.FuerzaConPlazo(mano, t.Estado.Comunitarias, *muestras, limite, b.azar)
 	situacion := estrategia.SituacionDesde(t, fuerza)
 	// Dos modos, un solo bot: en la mesa final juega el genoma de la final.
 	genoma := b.genoma
@@ -238,10 +266,51 @@ func (b *lince) decidir(ctx context.Context, t botsdk.Turno) botsdk.Accion {
 	accion := estrategia.AAccion(decision, t)
 
 	b.detalle.Printf("[%-7s] %s %s | mesa %-14s | fuerza %3.0f%% (efectiva %3.0f%%) vs %d | %-10s | %s",
-		t.Estado.Etapa, t.Mano[0], t.Mano[1], cartas(t.Estado.Comunitarias),
+		t.Estado.Etapa, mano[0], mano[1], cartas(t.Estado.Comunitarias),
 		fuerza*100, genoma.FuerzaEfectiva(situacion)*100, situacion.Rivales,
 		describir(accion), decision.Motivo)
 	return accion
+}
+
+// cartasValidas dice si la mano trae dos cartas de verdad (el valor cero de
+// una carta no es ninguna carta).
+func cartasValidas(m botsdk.Mano) bool {
+	for _, c := range m {
+		if c.Rango < botsdk.Dos || c.Rango > botsdk.As {
+			return false
+		}
+	}
+	return m[0] != m[1]
+}
+
+type manoGuardada struct {
+	IDMano string      `json:"id_mano"`
+	Cartas botsdk.Mano `json:"cartas"`
+}
+
+func (b *lince) guardarMano(id string, m botsdk.Mano) {
+	b.manoID, b.manoCartas = id, m
+	if b.rutaMano == "" || !cartasValidas(m) {
+		return
+	}
+	datos, err := json.Marshal(manoGuardada{IDMano: id, Cartas: m})
+	if err == nil {
+		err = os.WriteFile(b.rutaMano, datos, 0o644)
+	}
+	if err != nil {
+		b.eventos.Printf("ERROR al guardar las cartas de la mano: %v", err)
+	}
+}
+
+func (b *lince) leerMano() {
+	datos, err := os.ReadFile(b.rutaMano)
+	if err != nil {
+		return
+	}
+	var g manoGuardada
+	if json.Unmarshal(datos, &g) == nil && cartasValidas(g.Cartas) {
+		b.manoID, b.manoCartas = g.IDMano, g.Cartas
+	}
 }
 
 // --- Seguimiento del torneo ---------------------------------------------------
@@ -258,8 +327,10 @@ func (b *lince) protegido(que string, f func()) {
 }
 
 // ManoInicio implementa botsdk.ObservaManos.
-func (b *lince) ManoInicio(estado botsdk.EstadoPublico, _ botsdk.Mano) {
+func (b *lince) ManoInicio(estado botsdk.EstadoPublico, mano botsdk.Mano) {
 	b.protegido("ManoInicio", func() {
+		b.registro.manoInicio(estado, mano)
+		b.guardarMano(estado.IDMano, mano)
 		nueva, motivo := b.contexto.ManoInicio(estado)
 		if !nueva {
 			return
@@ -273,6 +344,9 @@ func (b *lince) ManoInicio(estado botsdk.EstadoPublico, _ botsdk.Mano) {
 // ManoFin implementa botsdk.ObservaManos.
 func (b *lince) ManoFin(resultado botsdk.ResultadoMano) {
 	b.protegido("ManoFin", func() {
+		if err := b.registro.manoFin(resultado, string(b.contexto.Fase()), b.contexto.Estado().IDJugador); err != nil {
+			b.eventos.Printf("ERROR al registrar la mano: %v", err)
+		}
 		if err := b.contexto.ManoFin(resultado); err != nil {
 			b.eventos.Printf("ERROR al guardar el estado: %v", err)
 		}
@@ -281,7 +355,10 @@ func (b *lince) ManoFin(resultado botsdk.ResultadoMano) {
 
 // EstadoActualizado implementa botsdk.ObservaEstado.
 func (b *lince) EstadoActualizado(estado botsdk.EstadoPublico) {
-	b.protegido("EstadoActualizado", func() { b.contexto.Observar(estado) })
+	b.protegido("EstadoActualizado", func() {
+		b.contexto.Observar(estado)
+		b.registro.observar(estado)
+	})
 }
 
 // --- Conexión -----------------------------------------------------------------

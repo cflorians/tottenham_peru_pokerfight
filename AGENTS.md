@@ -157,6 +157,13 @@ en bash). No pasar el token con `-token` ni escribirlo en ningún archivo.
 
 - `-Fase clasificatoria` es obligatorio en el servidor de pruebas (ahí todos vuelven a 10 000 fichas en cada
   ronda y una mesa de 6 se confundiría con la final). `-Nuevo` solo al empezar una sesión de pruebas.
+- Para poder seguir compilando mientras el bot está conectado (Windows no deja reemplazar un `.exe` en uso),
+  lanzarlo desde una copia: `Copy-Item bin\lince.exe bin\lince-servidor.exe` y agregar
+  `-Exe <ruta completa a bin\lince-servidor.exe>` al comando del supervisor.
+- Mientras hay un supervisor corriendo no se puede correr `robustez.py` (solo se permite una instancia).
+- El bot graba cada mano en `bots/lince/datos/manos-AAAAMMDD.jsonl`; `python bots/lince/pruebas/rivales.py`
+  saca el perfil de cada rival. **Lo que pase en el servidor de pruebas tiene prioridad**: es el único lugar
+  donde se ve a los otros equipos.
 - El log queda en `bots/lince/datos/` (ignorado por git). Para detenerlo, Ctrl+C o cerrar el proceso del
   supervisor; **no dejarlo corriendo** si la otra persona va a probar.
 - Lo que ya se vio del servidor está en `Simulaciones/servidor_pruebas.md`.

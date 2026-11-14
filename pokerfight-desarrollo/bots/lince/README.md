@@ -17,6 +17,8 @@ reglas de trabajo en equipo (ramas, PR, archivos compartidos, token) en `../../.
 | Contexto de torneo (`torneo/`) | Ronda, manos, fase (clasificatoria o final), fichas de cada alias. Se guarda en disco al cerrar cada mano |
 | Supervisor (`correr.ps1`) | Relanza el proceso si muere; una sola instancia por máquina |
 | Log a archivo | Cada decisión, cambio de mesa y reconexión, en `datos/lince-AAAAMMDD.log` |
+| Registro de manos | Cada mano completa (acciones de todos, cartas mostradas) en `datos/manos-AAAAMMDD.jsonl`, para estudiar a los rivales |
+| Cartas a salvo | Las cartas propias se guardan en `datos/mano.json`: si la conexión o el proceso se cortan a mitad de una mano, al volver la sigue jugando (la mesa no las repite) |
 
 El contexto de torneo decide **con qué genoma se juega**: `genoma.json` en la clasificatoria y
 `genoma_final.json` al detectar la mesa final (hoy son el mismo genoma: uno aparte para la final no dio mejor).
@@ -31,7 +33,8 @@ go test -trimpath ./bots/lince/...
 python bots/lince/pruebas/robustez.py
 ```
 
-`robustez.py` levanta mesas reales del kit y comprueba silencio, reconexión entre mesas, conteo de rondas,
+`robustez.py` (no corre si hay otro supervisor de Lince en la máquina, por ejemplo el del servidor de pruebas:
+solo se permite una instancia) levanta mesas reales del kit y comprueba silencio, reconexión entre mesas, conteo de rondas,
 detección de la final y que matar el proceso a mitad de una mesa no pierde nada (~2 minutos; con
 `-silencio 3600` deja al bot una hora conectado sin partida).
 
@@ -74,6 +77,17 @@ final con `-final`) y resume neto, quiebras y timeouts de Lince con cada genoma:
 ```bash
 python bots/lince/pruebas/mesas.py -mesas 40 v0=bots/lince/genoma.json v1=bots/lince/genoma_clasificatoria.json
 python bots/lince/pruebas/mesas.py -final -mesas 50 v0=bots/lince/genoma.json final=bots/lince/genoma_final.json
+```
+
+## Estudiar a los rivales
+
+Cuando el bot juega con archivos (sin `-sin-archivos`) graba cada mano. `pruebas/rivales.py` las resume por
+jugador: cuánto entra, cuánto sube, agresión, cuánto se retira ante una apuesta, all-ins y resultado. Es la
+forma de ver cómo juegan los otros equipos en el servidor de la organización.
+
+```bash
+python bots/lince/pruebas/rivales.py            # todo lo grabado en bots/lince/datos
+python bots/lince/pruebas/rivales.py -min 50    # solo rivales con 50 manos o más
 ```
 
 ## Correrlo
@@ -137,6 +151,7 @@ recompilar con otras opciones (`-trimpath`, `-ldflags=-s`) suele dar un binario 
 | `cmd/simular-liga/` | Mide M1, M1b y M2 de un bot en miles de torneos simulados |
 | `entrenamiento/genetico_liga.go`, `cmd/entrenar-liga/` | Entrenador con aptitud de liga o de mesa final |
 | `pruebas/mesas.py` | Mesas reales en condiciones de torneo para comparar genomas |
+| `registro.go`, `pruebas/rivales.py` | Registro de manos y perfil de cada rival |
 | `genoma.json` | Genoma de la clasificatoria (v1.1). Lo incluye el binario |
 | `genoma_final.json` | Genoma de la mesa final (hoy, el mismo de la v1.1). Lo incluye el binario |
 | `genoma_clasificatoria.json` | Última salida de `entrenar-liga -modo clasificatoria` (candidato; no lo usa el bot) |
