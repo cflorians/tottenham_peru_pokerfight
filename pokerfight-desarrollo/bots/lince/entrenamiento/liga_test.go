@@ -165,3 +165,44 @@ func TestCampoArmar(t *testing.T) {
 		}
 	}
 }
+
+func TestAptitudesSonReproduciblesYAcotadas(t *testing.T) {
+	bib := bibliotecaDePrueba()
+	g := estrategia.GenomaInicial()
+
+	liga := AptitudLiga{Liga: LigaDeLasBases(), Campos: Campos(g, g), Tamanos: []int{15, 20}, Ligas: 4, M2: 0.2, Forma: 3, Coevolucion: 2}
+	a := liga.Evaluar(g, []estrategia.Genoma{g, g}, bib, 5)
+	b := liga.Evaluar(g, []estrategia.Genoma{g, g}, bib, 5)
+	if a.Aptitud != b.Aptitud {
+		t.Fatal("la aptitud de liga no es reproducible")
+	}
+	if a.Aptitud < 0 || a.Aptitud > 60*0.2+30+3 {
+		t.Fatalf("aptitud de liga fuera de rango: %v", a.Aptitud)
+	}
+	if len(a.PorEscenario) != 3*len(liga.Campos)+3 {
+		t.Fatalf("PorEscenario tiene %d valores", len(a.PorEscenario))
+	}
+
+	final := AptitudFinal{Rivales: Finalistas(g, g, g), Topes: []int{150, 500}, Finales: 12, Coevolucion: 1}
+	c := final.Evaluar(g, []estrategia.Genoma{g}, bib, 5)
+	d := final.Evaluar(g, []estrategia.Genoma{g}, bib, 5)
+	if c.Aptitud != d.Aptitud || c.Aptitud < 0 || c.Aptitud > 100 {
+		t.Fatalf("aptitud de final no reproducible o fuera de rango: %v y %v", c.Aptitud, d.Aptitud)
+	}
+}
+
+func TestEvolucionarConDevuelveLaPoblacionOrdenada(t *testing.T) {
+	bib := bibliotecaDePrueba()
+	g := estrategia.GenomaInicial()
+	final := AptitudFinal{Rivales: Finalistas(g, g, g), Topes: []int{150}, Finales: 6}
+	cfg := ConfigGenetico{Poblacion: 6, Generaciones: 2, Elite: 1, TamTorneo: 2, ProbCruce: 0.9, ProbMutacion: 0.2, Sigma: 0.1, Semilla: 3, Hilos: 2}
+	poblacion, campeones := EvolucionarCon(cfg, []estrategia.Genoma{g}, bib, final.Evaluar, nil)
+	if len(poblacion) != 6 || len(campeones) != 2 {
+		t.Fatalf("población de %d y %d campeones", len(poblacion), len(campeones))
+	}
+	for i := 1; i < len(poblacion); i++ {
+		if poblacion[i].Evaluacion.Aptitud > poblacion[i-1].Evaluacion.Aptitud {
+			t.Fatal("la población no quedó ordenada de mejor a peor")
+		}
+	}
+}

@@ -1,6 +1,7 @@
 package entrenamiento
 
 import (
+	"math"
 	"math/rand/v2"
 
 	"github.com/aicspucp/pokerfight-arena-participantes/pkg/botsdk"
@@ -448,3 +449,124 @@ func subir(total float64) estrategia.Decision {
 func pagar() estrategia.Decision     { return estrategia.Decision{Tipo: estrategia.Pagar} }
 func pasar() estrategia.Decision     { return estrategia.Decision{Tipo: estrategia.Pasar} }
 func retirarse() estrategia.Decision { return estrategia.Decision{Tipo: estrategia.Retirarse} }
+
+// --- Réplicas de los bots fuertes del kit ------------------------------------
+//
+// Michi Espía y Bot Estadístico deciden con la equidad contra varias manos al
+// azar, estimada por Monte Carlo. Aquí no se simula: la equidad contra k
+// rivales se aproxima con fuerza^k, donde fuerza es la probabilidad
+// precalculada de ganarle a UNA mano al azar. La fórmula ignora que las manos
+// de los rivales comparten mazo y mesa, pero conserva lo que importa: cuánto
+// cae el valor de una mano con cada rival extra.
+
+func equidadContra(fuerza float64, rivales int) float64 {
+	return math.Pow(fuerza, float64(max(rivales, 1)))
+}
+
+// apostarPozo es botsdk.Turno.ApostarPozo: llevar la apuesta a la actual más
+// una fracción del pozo que quedaría tras pagar.
+func apostarPozo(s estrategia.Situacion, fraccion float64) estrategia.Decision {
+	return subir(s.ApuestaActual + fraccion*(s.Pozo+s.PorIgualar))
+}
+
+// Estadistico replica bots/estadistico/decision.go: sube si su equidad supera
+// con margen la "parte justa" (1 entre los que quedan), paga si la equidad
+// cubre el precio, y cerca de cada umbral sortea la decisión.
+type Estadistico struct{}
+
+func (Estadistico) Decidir(s estrategia.Situacion, azar *rand.Rand) estrategia.Decision {
+	const (
+		umbralSubir, recargoPorSubida, margenPagar = 0.25, 0.15, 0.04
+		fraccionMinima, fraccionMaxima             = 0.5, 1.0
+		probabilidadFarol, fraccionFarol           = 0.08, 0.5
+	)
+	rivales := max(s.Rivales, 1)
+	eq := equidadContra(s.Fuerza, rivales)
+	parteJusta := 1 / float64(rivales+1)
+	ventaja := (eq - parteJusta) / (1 - parteJusta)
+	umbral := umbralSubir + recargoPorSubida*float64(s.Subidas)
+
+	if s.PuedeSubir && superaUmbral(ventaja, umbral, azar) {
+		avance := 1.0
+		if umbral < 1 {
+			avance = min(max((ventaja-umbral)/(1-umbral), 0), 1)
+		}
+		return apostarPozo(s, fraccionMinima+(fraccionMaxima-fraccionMinima)*avance)
+	}
+	if s.PorIgualar <= 0 {
+		if s.Calle >= 1 && rivales <= 1 && s.PuedeSubir && azar.Float64() < probabilidadFarol {
+			return apostarPozo(s, fraccionFarol)
+		}
+		return pasar()
+	}
+	if superaUmbral(eq, s.PorIgualar/(s.Pozo+s.PorIgualar)+margenPagar, azar) {
+		return pagar()
+	}
+	return retirarse()
+}
+
+// superaUmbral sortea la decisión en una franja de ±0,05 alrededor del umbral,
+// como el bot original.
+func superaUmbral(valor, umbral float64, azar *rand.Rand) bool {
+	const ancho = 0.05
+	switch {
+	case valor >= umbral+ancho:
+		return true
+	case valor <= umbral-ancho:
+		return false
+	}
+	return azar.Float64() < (valor-(umbral-ancho))/(2*ancho)
+}
+
+// Espia replica bots/espia/main.go con el modelo de rivales en sus valores de
+// partida (rival desconocido: se retira la mitad de las veces, agresión
+// típica). El Espía de verdad ajusta esos números a cada rival con las manos;
+// en una ronda de 50 manos alcanza a moverlos poco.
+type Espia struct{}
+
+func (Espia) Decidir(s estrategia.Situacion, _ *rand.Rand) estrategia.Decision {
+	rivales := max(s.Rivales, 1)
+	if s.Calle == 0 {
+		eq := s.Fuerza
+		huboSubida := s.ApuestaActual > 1
+		exigencia := 0.02 * float64(rivales-1)
+		switch {
+		case eq >= 0.70:
+			return subir(max(3, 3*s.ApuestaActual))
+		case eq >= 0.58+exigencia && !huboSubida:
+			return subir(3)
+		case eq >= 0.50+exigencia && s.PorIgualar <= 4:
+			return pagar()
+		}
+		if s.PorIgualar <= 0 {
+			return pasar()
+		}
+		return retirarse()
+	}
+
+	simulados := min(rivales, 3)
+	eq := equidadContra(s.Fuerza, simulados)
+	parteJusta := 1 / float64(simulados+1)
+	if s.PorIgualar <= 0 {
+		seRetiran := math.Pow(0.5, float64(rivales))
+		switch {
+		case eq >= parteJusta+0.22:
+			if seRetiran < 0.30 {
+				return apostarPozo(s, 0.9)
+			}
+			return apostarPozo(s, 0.6)
+		case eq >= parteJusta+0.10 && seRetiran < 0.35:
+			return apostarPozo(s, 0.5)
+		}
+		return pasar()
+	}
+	const creible = 0.10
+	precio := s.PorIgualar / (s.Pozo + s.PorIgualar)
+	switch {
+	case eq >= parteJusta+0.35:
+		return apostarPozo(s, 1)
+	case eq-creible >= precio+0.03:
+		return pagar()
+	}
+	return retirarse()
+}

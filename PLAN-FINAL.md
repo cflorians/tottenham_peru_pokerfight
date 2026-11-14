@@ -5,7 +5,7 @@ Lo común (infraestructura, simulador, calendario, preguntas, riesgos) está en 
 
 ## Estado
 
-_Última actualización: vie 13/11/2026._ **B1 hecha en el simulador rápido** (`Simulaciones/a1_b1_linea_base.md`). M2 de la v0 en el campo mixto con 20 inscritos: 17,0 % / 12,6 % / 15,6 % (topes de 150, 500 y 5 000 manos), es decir, el azar o peor; Novato, 23-30 %. Los finalistas son sobre todo bots tight. Falta la validación en la arena real con `mesa-unica`. Sigue B2.
+_Última actualización: vie 13/11/2026._ **B1 y B2 hechas** (`Simulaciones/a2_b2_v1.md`). El genoma de la v1 gana el **78 % de 60 finales reales** contra los bots del kit (v0: 30 %) y 68-76 % en el simulador con tope de 500 manos o sin tope. Un genoma entrenado solo para finales (`Simulaciones/genoma_final_b2.json`) no lo supera: la final se juega con el genoma de la v1. El bot ya cambia de genoma al detectar la final. En el servidor de pruebas se jugaron 3 manos por segundo: la final se decidiría por eliminación y el reloj (B3) pierde prioridad. Sigue B3, empezando por la mesa corta.
 
 ## 1. Objetivo
 
@@ -68,8 +68,7 @@ peso de "llegar a la final" en el premio esperado.
 
 - [x] Mesa final en el simulador rápido (`entrenamiento.JugarFinal`): 6 jugadores, 10 000 fichas, hasta que
       quede uno o hasta un tope de manos (150, 500, y 5 000 como "sin tope"); al tope gana el que tiene más fichas.
-- [ ] Nivel real sin construir nada: la arena del kit ya tiene el formato `mesa-unica` (hasta que quede uno).
-      Configuración de 6 con 10 000 fichas y ciegas 50/100.
+- [x] Nivel real: `pruebas/mesas.py -final` juega finales de 6 con `mesa-unica`, 10 000 fichas y ciegas 50/100.
 - [x] **Rivales de la final**: los tipos de bot que llegan a la final en las ligas simuladas del Plan A, con
       su frecuencia, por campo. Llegan sobre todo novato y roca (~65 % de los suyos); maníacos y aleatorios, casi nunca.
 - [x] M2 de Darwin original, del genoma prudente y de Novato contra esos rivales (cada final se juega con los
@@ -80,11 +79,12 @@ peso de "llegar a la final" en el premio esperado.
 
 Es barato: el entrenador ya existe, solo cambia el fitness.
 
-- [ ] Fitness = M2 (ganó o no ganó), promediando las tres duraciones.
-- [ ] Rivales: los finalistas simulados, nuestro bot de clasificatoria y campeones de generaciones anteriores
+- [x] Fitness = M2 (ganó o no ganó), promediando las tres duraciones (`entrenar-liga -modo final`).
+- [x] Rivales: los finalistas simulados, nuestro bot de clasificatoria y campeones de generaciones anteriores
       (coevolución).
-- [ ] Detección de la final en su forma simple y cambio de genoma al detectarla.
-- [ ] Validar con `mesa-unica` en la arena real (mínimo 300 finales) y promover.
+- [x] Detección de la final en su forma simple y cambio de genoma al detectarla (`genoma_final.json`).
+- [ ] Validar con `mesa-unica` en la arena real (mínimo 300 finales): van 60 por versión, con el genoma de
+      la v1. El genoma B2 no se promovió: no supera al de la v1 en el simulador.
 
 ### B3 · Modo final completo (lun 16 - mar 17) → versión v4
 

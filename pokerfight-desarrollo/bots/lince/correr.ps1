@@ -23,7 +23,8 @@
 param(
     # host:puerto del servidor.
     [Parameter(Mandatory = $true)][string]$Addr,
-    # Token del equipo. Si no se pasa, se toma de la variable POKERFIGHT_TOKEN.
+    # Token del equipo. Si no se pasa, se toma de la variable POKERFIGHT_TOKEN
+    # (la de esta terminal o la guardada en el usuario de Windows).
     [string]$Token = $env:POKERFIGHT_TOKEN,
     # Carpeta del estado y los logs. Por defecto, bots\lince\datos.
     [string]$Datos,
@@ -42,7 +43,10 @@ $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 if (-not $Exe) { $Exe = Join-Path $repo 'bin\lince.exe' }
 if (-not $Datos) { $Datos = Join-Path $PSScriptRoot 'datos' }
+if (-not $Token) { $Token = [Environment]::GetEnvironmentVariable('POKERFIGHT_TOKEN', 'User') }
 if (-not $Token) { throw 'Falta el token: pasar -Token o definir la variable POKERFIGHT_TOKEN.' }
+# El bot lo lee de la variable de entorno: no viaja en la linea de comandos.
+$env:POKERFIGHT_TOKEN = $Token
 
 New-Item -ItemType Directory -Force $Datos | Out-Null
 $registro = Join-Path $Datos 'supervisor.log'
@@ -71,7 +75,7 @@ try {
         }
     }
 
-    $argumentos = @('-addr', $Addr, '-token', $Token, '-datos', $Datos, '-fase', $Fase)
+    $argumentos = @('-addr', $Addr, '-datos', $Datos, '-fase', $Fase)
     if ($Silencioso) { $argumentos += '-silencioso' }
     $lanzamiento = 0
     while ($true) {

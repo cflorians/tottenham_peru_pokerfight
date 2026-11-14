@@ -9,7 +9,7 @@ Este archivo tiene lo común. La estrategia está en dos planes:
 
 ## Estado
 
-_Última actualización: vie 13/11/2026 (Fase 1: simulador rápido hecho y líneas base medidas; falta el nivel real)._
+_Última actualización: sáb 14/11/2026 (v1 promovida; primera conexión al servidor de pruebas)._
 
 - Hecho: análisis de las bases y de la guía, 90 mesas de prueba en el formato real
   (`Simulaciones/pruebas_formato_real.md`), prueba del genoma prudente (`Simulaciones/genoma_prudente.json`)
@@ -24,11 +24,23 @@ _Última actualización: vie 13/11/2026 (Fase 1: simulador rápido hecho y líne
   `Simulaciones/a1_b1_linea_base.md`. **Lo que dicen**: Novato supera a la v0 en todo (U de 15,2 contra 7,2 en
   el campo mixto con 20 inscritos), la v0 juega la final peor que el azar, y casi nunca llegan 6 con fichas a
   la ronda 10: clasifican los últimos eliminados.
-- **Servidor de pruebas**: el token del equipo ya llegó (no está en el repositorio). El vie 13/11 la guía marca
-  el servidor como disponible en `32.201.29.142:9000`, pero la conexión TCP no respondió desde dos redes
-  distintas. Falta avisar a la organización y reintentar.
-- **Próximo paso**: A2 (reentrenar los genes con fitness de liga → v1) y B2 (genoma de la final → v2). Queda
-  de la Fase 1 el nivel real (orquestador y prueba de paridad con fichas arrastradas).
+- **v1 promovida (sáb 14/11, Carlos)**: genoma entrenado con el premio del torneo (`cmd/entrenar-liga`), ahora
+  en `genoma.json`; el de la v0 quedó en `genoma_v0.json`. Supera a la v0 en el simulador en los cuatro campos,
+  en 300 mesas reales (neto +7 489 contra +5 136, misma quiebra) y sobre todo en la final: **gana el 78 % de
+  60 finales reales** contra los bots del kit (v0: 30 %). Detalle en `Simulaciones/a2_b2_v1.md`.
+- **v2 (genoma aparte para la final): no se justifica por ahora.** El entrenado solo para finales no supera
+  al de la v1 jugando finales. El bot ya cambia de genoma al detectar la final (`genoma_final.json`), pero hoy
+  los dos archivos tienen el mismo genoma.
+- **Simulador**: se agregaron réplicas de Espía y Estadístico y una prueba de paridad de una ronda contra la
+  arena real (`simular-liga -paridad`), que coincide bien. `pruebas/mesas.py` corre mesas y finales reales en
+  serie: es el nivel real liviano. Falta la paridad con fichas arrastradas (10 rondas en la arena real).
+- **Servidor de pruebas**: el sáb 14/11 Lince se conectó con el token del equipo y jugó 30 manos; después el
+  servidor cerró la conexión y dejó de responder (`Simulaciones/servidor_pruebas.md`). Los `id_mano` son
+  `practica-r1-m01-mano-30` y el bot los lee bien. El ritmo fue de 3 manos por segundo: **la final se
+  decidiría por eliminación, no por reloj**. Cómo conectarse y cómo guardar el token: `AGENTS.md`.
+- **Próximo paso**: bajar la quiebra de las rondas 1 y 2 (15 % y 8 % en el campo mixto; peor contra bots que
+  van all-in seguido) y seguir con la política nueva (A3). Falta avisar a la organización de las caídas del
+  servidor, el correo con las preguntas y la prueba de silencio larga.
 - Nombre del bot: **Lince** es un nombre de trabajo; se puede cambiar (es renombrar la carpeta y los imports).
 - **Equipo de 2 personas** (una con Claude Code, la otra con Codex) sobre un repositorio privado de GitHub.
   Las reglas de trabajo en equipo están en [`AGENTS.md`](AGENTS.md); el reparto, en la sección 4.
@@ -90,8 +102,8 @@ si no, se entrega la anterior.
 | Versión | Plan | Qué agrega | Lista para |
 | --- | --- | --- | --- |
 | **v0** | Común | Darwin + genoma prudente + infraestructura | mié 11 |
-| **v1** | A | Genes actuales reentrenados con fitness de liga | vie 13 |
-| **v2** | B | Genoma de la final y detección de la final | sáb 14 |
+| **v1** | A | Genes actuales reentrenados con fitness de liga. **Hecha y promovida el sáb 14** | vie 13 |
+| **v2** | B | Genoma de la final y detección de la final. **Mecanismo hecho; el genoma aparte no supera al de la v1** | sáb 14 |
 | **v3** | A | Política nueva: rangos, tablas de valor, juego según el stack | lun 16 |
 | **v4** | B | Modo final completo: reloj, valor de la final, mesa corta | mar 17 |
 | **v5** | A + B | Modelado de rivales | mié 18 |
@@ -195,17 +207,20 @@ La arena del kit no juega 10 rondas con fichas arrastradas. Herramienta propia e
       tope de manos.
 - [x] Reporte por bot (`cmd/simular-liga`): M1, M1b, M2, quiebra por ronda, fichas finales, y del campo:
       vivos por ronda, fichas del 1.º y del 6.º, quién llega a la final, tablas de valor.
-- [ ] Comparación pareada de dos versiones (diferencia con su intervalo): hace falta para la prueba de
-      promoción. Hoy `simular-liga` da cada bot con su intervalo por separado.
+- [x] Comparación pareada de dos versiones: con varios bots en `-heroes`, `simular-liga` da la diferencia
+      contra el primero liga por liga, con su intervalo.
+- [x] Réplicas de Michi Espía y Bot Estadístico en el simulador (`replicas.go`), dentro de los campos kit y
+      mixto. Falta la de Gato Bandido.
 
 **Nivel real** (para validar), con los `.exe` y la mesa de verdad:
 
 - [ ] Orquestador propio que usa `internal/mesa` desde nuestra carpeta (mismo módulo, no hace falta editar el
       kit): `ConfigPartida.StackPorJugador` ya permite sentar a cada bot con sus fichas. El límite de
       6 minutos no existe en la mesa local: lo pone el orquestador.
-- [ ] La final se prueba con el formato `mesa-unica` de la arena, que ya existe.
-- [ ] **Prueba de paridad**: el mismo genoma en el nivel rápido y en el real tiene que dar % de quiebra y neto
-      compatibles. Si no coinciden, se arregla el simulador antes de entrenar nada.
+- [x] La final se prueba con el formato `mesa-unica` de la arena (`pruebas/mesas.py -final`).
+- [x] **Prueba de paridad de una ronda** (`simular-liga -paridad` contra las mesas reales): neto y quiebra
+      por bot coinciden en orden y magnitud (`Simulaciones/a2_b2_v1.md`, sección 5).
+- [ ] Paridad con fichas arrastradas: 10 rondas en la arena real (necesita el orquestador).
 
 Las líneas base de cada plan (A1 y B1) se corren apenas esté el simulador.
 
@@ -245,7 +260,7 @@ Las líneas base de cada plan (A1 y B1) se corren apenas esté el simulador.
 | Riesgo | Mitigación |
 | --- | --- |
 | El día del torneo el bot no conecta (token nunca probado, servidor nuevo) | Probar el token con `conservador` apenas haya servidor; llegar con tiempo; tener a mano la dirección vigente |
-| Windows bloquea el `.exe` | Probado en la Fase 0; alternativa `go run .`; probar también en la máquina de respaldo |
+| Windows bloquea el `.exe` | Compilar, comprobar que arranca y no recompilar; si lo bloquea, recompilar con otras opciones (`go run` no sirve: también genera un `.exe`); probar también en la máquina de respaldo |
 | El proceso muere o la PC se suspende | Supervisor, estado en disco, suspensión y actualizaciones desactivadas |
 | Se cae la red | Reconexión sin límite; red de respaldo (celular) lista; segunda máquina con el mismo binario, apagada (dos conexiones con el mismo token se pisan) |
 | El bot se cree en la final estando en la clasificatoria (o al revés) | Estado en disco, flag `-fase`, y ante la duda modo clasificatoria |
@@ -264,17 +279,17 @@ exactamente lo entregado.
 
 - PC enchufada, sin suspensión ni actualizaciones, red por cable si se puede, respaldo listo.
 - Bot lanzado antes de la hora con el supervisor, el token del equipo y `-Nuevo`:
-  `powershell -ExecutionPolicy Bypass -File bots\lince\correr.ps1 -Addr HOST:PUERTO -Token TOKEN -Nuevo`.
+  `powershell -ExecutionPolicy Bypass -File bots\lince\correr.ps1 -Addr HOST:PUERTO -Nuevo` (el token sale de
+  la variable `POKERFIGHT_TOKEN`).
   **Una sola instancia.** Si hay que relanzar a mitad del torneo, **sin** `-Nuevo`.
 - El `.exe` es el mismo que se probó: no recompilar ese día.
 - Mirar el log en vivo, sin tocar nada: no se permite intervenir durante las partidas.
 
 ## 9. Próximo paso concreto
 
-A2 y B2: usar `JugarLiga` y `JugarFinal` como fitness del entrenador (hoy mide bb/100) y reentrenar. La vara
-para la v1 es **Novato**, que hoy supera a la v0 en el simulador. En paralelo: avisar a la organización que el
-servidor de pruebas no responde, mandar el correo con las preguntas, la prueba de silencio larga y el nivel
-real del simulador (prueba de paridad).
+A3 (política nueva), empezando por lo que más duele hoy: la quiebra de las rondas 1 y 2 y los choques con
+bots que van all-in seguido. En paralelo: dejar el bot conectado al servidor de pruebas cuando esté estable,
+avisar a la organización de las caídas, mandar el correo con las preguntas y la prueba de silencio larga.
 
 ## Historial del plan
 

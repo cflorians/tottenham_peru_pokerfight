@@ -67,6 +67,10 @@ type cuenta struct {
 	empezoRonda  []int // Ligas en que empezó la ronda r con fichas.
 	quebroRonda  []int // Ligas en que quebró en la ronda r.
 	finalGanadas []int // Por tope de manos.
+	// Qué pasó en cada liga, para comparar dos héroes liga por liga (todos
+	// juegan las mismas). Solo se llenan en la cuenta total.
+	finalEnLiga   []bool
+	primeroEnLiga []bool
 
 	// Datos del campo entero (se llenan solo con el primer héroe).
 	vivosTrasRonda []int64
@@ -132,7 +136,7 @@ func main() {
 	var (
 		listaN      = flag.String("n", "20", "participantes por liga, separados por coma (por ejemplo 15,20,30,40)")
 		listaCampos = flag.String("campos", "kit,agresivo,tight,mixto", "campos de rivales a simular")
-		listaHeroes = flag.String("heroes", "v0,darwin,novato", "bots a medir: v0 (genoma.json), darwin (genoma_darwin.json), novato, o la ruta de un genoma .json")
+		listaHeroes = flag.String("heroes", "v0,darwin,novato", "bots a medir: v0 (genoma_v0.json), actual (genoma.json), final (genoma_final.json), darwin, novato, o la ruta de un genoma .json")
 		ligas       = flag.Int("ligas", 2000, "ligas por héroe, campo y tamaño")
 		listaTopes  = flag.String("topes", "150,500,0", "topes de manos de la mesa final (0 = sin reloj)")
 		tamBib      = flag.Int("biblioteca", 20000, "repartos precalculados")
@@ -140,18 +144,23 @@ func main() {
 		semilla     = flag.Uint64("semilla", 2026, "semilla: misma semilla, mismo resultado")
 		dir         = flag.String("dir", dirDelBot(), "carpeta del bot (genomas y caché)")
 		rutaCache   = flag.String("cache", filepath.Join("datos", "biblioteca-liga.cache"), "caché de la biblioteca, relativa a -dir (vacío para no usar)")
+		paridad     = flag.Bool("paridad", false, "en vez de ligas, juega mesas sueltas de una ronda con las alineaciones de Simulaciones/pruebas_formato_real.md, para comparar el simulador con la arena real")
 		tabla       = flag.Bool("tabla", false, "imprimir las tablas de valor P(final) y P(1.º) por ronda y stack")
 	)
 	flag.Parse()
 
 	darwin := leerGenoma(filepath.Join(*dir, "genoma_darwin.json"))
-	prudente := leerGenoma(filepath.Join(*dir, "genoma.json"))
+	prudente := leerGenoma(filepath.Join(*dir, "genoma_v0.json"))
 
 	var heroes []heroe
 	for _, nombre := range strings.Split(*listaHeroes, ",") {
 		switch nombre = strings.TrimSpace(nombre); nombre {
 		case "v0":
 			heroes = append(heroes, heroe{"v0 (prudente)", prudente})
+		case "actual":
+			heroes = append(heroes, heroe{"actual (genoma.json)", leerGenoma(filepath.Join(*dir, "genoma.json"))})
+		case "final":
+			heroes = append(heroes, heroe{"final (genoma_final.json)", leerGenoma(filepath.Join(*dir, "genoma_final.json"))})
 		case "darwin":
 			heroes = append(heroes, heroe{"Darwin original", darwin})
 		case "novato":
@@ -193,6 +202,10 @@ func main() {
 	fmt.Fprintf(os.Stderr, "\nbiblioteca lista: %d repartos (%s)\n", len(bib), time.Since(inicio).Round(time.Second))
 
 	cfgLiga := entrenamiento.LigaDeLasBases()
+	if *paridad {
+		informarParidad(cfgLiga, darwin, prudente, bib, *ligas, *semilla)
+		return
+	}
 
 	fmt.Printf("Simulador rápido · %d ligas por héroe, campo y tamaño · semilla %d · biblioteca de %d repartos con %d muestras\n\n",
 		*ligas, *semilla, len(bib), *muestras)
@@ -227,6 +240,7 @@ func simular(cfg entrenamiento.ConfigLiga, he heroe, rivales []entrenamiento.Tip
 	}
 	n := len(politicas)
 
+	finalEnLiga, primeroEnLiga := make([]bool, ligas), make([]bool, ligas)
 	hilos := runtime.NumCPU()
 	parciales := make([]*cuenta, hilos)
 	var espera sync.WaitGroup
@@ -254,9 +268,11 @@ func simular(cfg entrenamiento.ConfigLiga, he heroe, rivales []entrenamiento.Tip
 				}
 				if res.Primero() == 0 {
 					c.primero++
+					primeroEnLiga[k] = true
 				}
 				if res.EsFinalista(0) {
 					c.final++
+					finalEnLiga[k] = true
 					finalistas = finalistas[:0]
 					miSilla := 0
 					for i, f := range res.Finalistas {
@@ -284,6 +300,7 @@ func simular(cfg entrenamiento.ConfigLiga, he heroe, rivales []entrenamiento.Tip
 	for _, c := range parciales {
 		total.sumar(c)
 	}
+	total.finalEnLiga, total.primeroEnLiga = finalEnLiga, primeroEnLiga
 	return total
 }
 
@@ -374,6 +391,18 @@ func informar(campo entrenamiento.Campo, n int, rivales []entrenamiento.TipoBot,
 			}
 		}
 		fmt.Printf(" %.2f | %d |\n", 60*m1*m2+30*m1b, c.fichas/int64(c.ligas))
+	}
+
+	// --- Comparación pareada contra el primer héroe ---
+	if len(heroes) > 1 {
+		fmt.Printf("\nDiferencia contra %s, liga por liga (mismas ligas para los dos; ✔ = el intervalo del 95 %% no toca el cero). U_A = 12 × M1 + 30 × M1b es el premio esperado del plan A con M2 fija en 0,20.\n\n", heroes[0].nombre)
+		fmt.Println("| Bot | Δ M1 (puntos) | Δ M1b (puntos) | Δ U_A (soles) |\n| --- | ---: | ---: | ---: |")
+		base := cuentas[0]
+		for h := 1; h < len(heroes); h++ {
+			c := cuentas[h]
+			fmt.Printf("| %s | %s | %s | %s |\n", heroes[h].nombre,
+				diferencia(c, base, 100, 0), diferencia(c, base, 0, 100), diferencia(c, base, 12, 30))
+		}
 	}
 
 	// --- Quiebra por ronda ---
@@ -475,6 +504,66 @@ func informar(campo entrenamiento.Campo, n int, rivales []entrenamiento.TipoBot,
 	}
 }
 
+// informarParidad juega una sola ronda (50 manos) con las tres alineaciones
+// que se midieron en la arena real y reporta, por bot, el neto medio y el
+// porcentaje de mesas en que quiebra. Si las réplicas se parecen a los bots de
+// verdad, los números se parecen a los de la arena.
+func informarParidad(cfg entrenamiento.ConfigLiga, darwin, prudente estrategia.Genoma, bib entrenamiento.Biblioteca, mesas int, semilla uint64) {
+	tipos := map[string]estrategia.Politica{
+		"darwin": darwin, "prudente": prudente, "espia": entrenamiento.Espia{}, "estadistico": entrenamiento.Estadistico{},
+		"base": entrenamiento.Base{}, "novato": entrenamiento.Novato{}, "conservador": entrenamiento.Conservador{}, "aleatorio": entrenamiento.Aleatorio{},
+	}
+	alineaciones := [][]string{
+		{"darwin", "espia", "estadistico", "base", "novato"},
+		{"darwin", "espia", "estadistico", "novato", "conservador"},
+		{"darwin", "espia", "estadistico", "base", "aleatorio", "conservador"},
+		{"prudente", "espia", "estadistico", "base", "novato"},
+		{"prudente", "espia", "estadistico", "novato", "conservador"},
+		{"prudente", "espia", "estadistico", "base", "aleatorio", "conservador"},
+	}
+	type suma struct {
+		mesas, quiebras int
+		neto            int64
+	}
+	total := map[string]*suma{}
+	var orden []string
+	for a, alineacion := range alineaciones {
+		politicas := make([]estrategia.Politica, len(alineacion))
+		for i, nombre := range alineacion {
+			politicas[i] = tipos[nombre]
+			if total[nombre] == nil {
+				total[nombre] = &suma{}
+				orden = append(orden, nombre)
+			}
+		}
+		for k := 0; k < mesas; k++ {
+			s := semilla*7919 + uint64(a)*1_000_003 + uint64(k)
+			stacks := make([]int64, len(politicas))
+			for i := range stacks {
+				stacks[i] = cfg.Mesa.Stack
+			}
+			// Se rota quién se sienta dónde para que la posición no favorezca a nadie.
+			rot := k % len(politicas)
+			enMesa := append(append([]estrategia.Politica{}, politicas[rot:]...), politicas[:rot]...)
+			entrenamiento.JugarMesa(cfg.Mesa, enMesa, stacks, bib, int(s*2654435761%uint64(len(bib))), cfg.ManosPorRonda, s, nil)
+			for i, f := range stacks {
+				t := total[alineacion[(i+rot)%len(politicas)]]
+				t.mesas++
+				t.neto += f - cfg.Mesa.Stack
+				if f <= 0 {
+					t.quiebras++
+				}
+			}
+		}
+	}
+	fmt.Printf("\nParidad: una ronda de %d manos, %d mesas por alineación (las de Simulaciones/pruebas_formato_real.md, con Darwin original y con el genoma prudente en su lugar).\n\n", cfg.ManosPorRonda, mesas)
+	fmt.Println("| Bot (réplica) | Mesas | Neto medio | Quiebra |\n| --- | ---: | ---: | ---: |")
+	for _, nombre := range orden {
+		t := total[nombre]
+		fmt.Printf("| %s | %d | %+d | %s |\n", nombre, t.mesas, t.neto/int64(t.mesas), porcentaje(t.quiebras, t.mesas))
+	}
+}
+
 func nombreTope(t int) string {
 	if t <= 0 {
 		return "sin reloj"
@@ -493,6 +582,35 @@ func porcentaje(k, n int) string {
 	centro := (p + z*z/(2*float64(n))) / den
 	radio := z * math.Sqrt(p*(1-p)/float64(n)+z*z/(4*float64(n)*float64(n))) / den
 	return fmt.Sprintf("%.1f %% [%.1f-%.1f]", 100*p, 100*max(centro-radio, 0), 100*min(centro+radio, 1))
+}
+
+// diferencia escribe la media de (a - b) liga por liga, con su intervalo del
+// 95 %, de la cantidad pesoFinal × llegó a la final + pesoPrimero × terminó 1.º.
+func diferencia(a, b *cuenta, pesoFinal, pesoPrimero float64) string {
+	valor := func(c *cuenta, k int) float64 {
+		var v float64
+		if c.finalEnLiga[k] {
+			v += pesoFinal
+		}
+		if c.primeroEnLiga[k] {
+			v += pesoPrimero
+		}
+		return v
+	}
+	n := float64(len(a.finalEnLiga))
+	var suma, cuadrados float64
+	for k := range a.finalEnLiga {
+		d := valor(a, k) - valor(b, k)
+		suma += d
+		cuadrados += d * d
+	}
+	media := suma / n
+	radio := 1.96 * math.Sqrt(max(cuadrados/n-media*media, 0)/n)
+	marca := ""
+	if media-radio > 0 || media+radio < 0 {
+		marca = " ✔"
+	}
+	return fmt.Sprintf("%+.2f [%+.2f a %+.2f]%s", media, media-radio, media+radio, marca)
 }
 
 func enteros(lista string) []int {

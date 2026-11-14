@@ -109,10 +109,57 @@ A y B no chocan.
 
 ### Token y servidor de la organización
 
-- El **token del equipo es secreto y es uno solo**: nunca va al repositorio, ni a un log subido, ni a un PR.
-  Se pasa por la variable `POKERFIGHT_TOKEN` o por un `.env` local (ignorado por git).
-- **Una sola conexión a la vez**: dos conexiones con el mismo token se pisan. Antes de conectar al servidor de
-  pruebas, avisar a la otra persona. El día del torneo corre una sola máquina.
+- El **token del equipo es secreto y es uno solo** (`pfb-...`; es el mismo en las pruebas y el día del
+  torneo): nunca va al repositorio, ni a un log subido, ni a un PR, **ni al chat de un agente**.
+- **Una sola conexión a la vez**: dos conexiones con el mismo token se pisan (la nueva reemplaza a la
+  anterior). Antes de conectar al servidor de pruebas, avisar a la otra persona. El día del torneo corre una
+  sola máquina.
+
+#### Guardar el token (una vez por persona, a mano, en su propia terminal)
+
+El bot y el supervisor leen el token de la variable de entorno `POKERFIGHT_TOKEN`. Guardándola de forma
+permanente en la cuenta de cada uno, el agente (Codex o Claude Code) puede lanzar el bot sin ver el token.
+
+Windows (PowerShell); queda en el usuario de Windows, fuera del repositorio:
+
+```powershell
+[Environment]::SetEnvironmentVariable('POKERFIGHT_TOKEN', 'pfb-xxxx', 'User')
+```
+
+macOS o Linux: agregar al final de `~/.zshrc` o `~/.bashrc`:
+
+```bash
+export POKERFIGHT_TOKEN='pfb-xxxx'
+```
+
+Después hay que **abrir una terminal nueva** (y reiniciar el agente) para que la vean. Para el agente: comprobar
+solo que existe, nunca imprimirla (`[bool]$env:POKERFIGHT_TOKEN` en PowerShell, `test -n "$POKERFIGHT_TOKEN"`
+en bash). No pasar el token con `-token` ni escribirlo en ningún archivo.
+
+#### Conectar al servidor de pruebas
+
+- **Dirección**: `32.201.29.142:9000` (la de la guía; puede cambiar: revisarla antes). Responde **a ratos**: el
+  vie 13/11 no contestaba; el sáb 14/11 a las 12:57 sí, Lince jugó 30 manos y a los 15 s el servidor cerró
+  la conexión y dejó de responder otra vez. Si no conecta, el bot reintenta solo.
+- Comprobar si responde, sin token: `Test-NetConnection 32.201.29.142 -Port 9000` (PowerShell) o
+  `nc -vz 32.201.29.142 9000`.
+- Lanzar Lince, desde `pokerfight-desarrollo/` (primero compilar y comprobar que `bin/lince` arranca):
+
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File bots\lince\correr.ps1 -Addr 32.201.29.142:9000 -Fase clasificatoria -Nuevo -Silencioso
+  ```
+
+  Sin PowerShell (macOS o Linux), sin supervisor:
+
+  ```bash
+  ./bin/lince -addr 32.201.29.142:9000 -fase clasificatoria -datos bots/lince/datos -silencioso
+  ```
+
+- `-Fase clasificatoria` es obligatorio en el servidor de pruebas (ahí todos vuelven a 10 000 fichas en cada
+  ronda y una mesa de 6 se confundiría con la final). `-Nuevo` solo al empezar una sesión de pruebas.
+- El log queda en `bots/lince/datos/` (ignorado por git). Para detenerlo, Ctrl+C o cerrar el proceso del
+  supervisor; **no dejarlo corriendo** si la otra persona va a probar.
+- Lo que ya se vio del servidor está en `Simulaciones/servidor_pruebas.md`.
 
 ### Resultados y entrenamientos
 

@@ -12,8 +12,8 @@ resultados de las simulaciones.
 | Congelar el código | vie 20/11/2026 |
 | **Entrega** | **sáb 21/11/2026** |
 | Torneo | dom 22/11/2026 |
-| Versión actual del bot | **v0** (Gato Darwin + genoma prudente + infraestructura) |
-| Próximo paso | Fase 1: simulador de liga y de mesa final (ver [`PLAN-BOT.md`](PLAN-BOT.md)) |
+| Versión actual del bot | **v1** (genoma entrenado con el premio del torneo; gana el 78 % de 60 finales reales contra los bots del kit) |
+| Próximo paso | Bajar la quiebra de las primeras rondas y política nueva (ver [`PLAN-BOT.md`](PLAN-BOT.md)) |
 
 ## La competencia en dos líneas
 
@@ -102,8 +102,9 @@ El detalle está en `AGENTS.md`; lo esencial:
 3. **Antes de cada PR**: compilar, `go vet` y `go test` del bot; si cambia el juego, mesas de torneo.
 4. **Lo que no está en el repositorio no existe**: los agentes no comparten memoria. Decisiones y avances van
    al "Estado" del plan; resultados, a `Simulaciones/`.
-5. **El token es uno solo y es secreto**: va en la variable `POKERFIGHT_TOKEN`, nunca en git. Una sola
-   conexión a la vez: avisar antes de usar el servidor de pruebas.
+5. **El token es uno solo y es secreto**: cada uno lo guarda una vez en la variable `POKERFIGHT_TOKEN` de su
+   cuenta (así el agente lanza el bot sin verlo); nunca va a git ni al chat. Una sola conexión a la vez:
+   avisar antes de usar el servidor de pruebas. Los pasos están en [`AGENTS.md`](AGENTS.md).
 6. **Reparto**: una persona lleva el Plan A y la otra el Plan B; el simulador y el ensayo general son
    comunes. La tabla está en la sección 4 de [`PLAN-BOT.md`](PLAN-BOT.md).
 

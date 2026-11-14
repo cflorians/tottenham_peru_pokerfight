@@ -48,6 +48,12 @@ import (
 //go:embed genoma.json
 var genomaIncluido []byte
 
+// genomaFinalIncluido es el genoma con el que juega la mesa final: ahí no hay
+// premio por sobrevivir, solo por ganar, y se juega distinto.
+//
+//go:embed genoma_final.json
+var genomaFinalIncluido []byte
+
 // tablaPreflop es la fuerza de las 169 manos iniciales, precalculada por el
 // entrenamiento. Sin ella, cada proceso la recalcularía de cero.
 //
@@ -56,8 +62,9 @@ var tablaPreflop []byte
 
 var (
 	direccion   = flag.String("addr", "localhost:9000", "dirección de la mesa (host:puerto)")
-	token       = flag.String("token", "", "token del equipo. En una mesa local, cualquier texto")
+	token       = flag.String("token", "", "token del equipo; si falta, se toma de la variable POKERFIGHT_TOKEN. En una mesa local, cualquier texto")
 	rutaGenoma  = flag.String("genoma", "", "genoma.json a usar en lugar del incluido en el binario")
+	rutaFinal   = flag.String("genoma-final", "", "genoma de la mesa final a usar en lugar del incluido; con -genoma y sin este flag, la final se juega con el de -genoma")
 	semilla     = flag.Uint64("semilla", 7, "semilla de los faroles y del Monte Carlo")
 	muestras    = flag.Int("muestras", 1500, "muestras de Monte Carlo por decisión después del flop")
 	silencioso  = flag.Bool("silencioso", false, "no imprime cada decisión en la terminal (al archivo de log van igual)")
@@ -70,7 +77,8 @@ var (
 const nombreBot = "lince"
 
 type lince struct {
-	genoma   estrategia.Genoma
+	genoma   estrategia.Genoma // Clasificatoria.
+	final    estrategia.Genoma // Mesa final.
 	azar     *rand.Rand
 	contexto *torneo.Contexto
 
@@ -121,6 +129,22 @@ func (b *lince) preparar() (cerrar func(), err error) {
 		return cerrar, err
 	}
 	b.genoma = genoma
+
+	// El genoma de la final: el del flag, o el incluido. Si se pasó -genoma
+	// sin -genoma-final (pruebas con un genoma suelto), se usa ese en las dos
+	// fases, para medir un solo genoma por vez.
+	b.final = genoma
+	if *rutaFinal != "" || *rutaGenoma == "" {
+		datosFinal := genomaFinalIncluido
+		if *rutaFinal != "" {
+			if datosFinal, err = os.ReadFile(*rutaFinal); err != nil {
+				return cerrar, err
+			}
+		}
+		if b.final, _, err = estrategia.LeerGenoma(datosFinal); err != nil {
+			return cerrar, fmt.Errorf("genoma de la final: %w", err)
+		}
+	}
 
 	var tabla map[string]float64
 	if err := json.Unmarshal(tablaPreflop, &tabla); err != nil {
@@ -205,12 +229,17 @@ func (b *lince) decidir(ctx context.Context, t botsdk.Turno) botsdk.Accion {
 
 	fuerza := estrategia.FuerzaConPlazo(t.Mano, t.Estado.Comunitarias, *muestras, limite, b.azar)
 	situacion := estrategia.SituacionDesde(t, fuerza)
-	decision := b.genoma.Decidir(situacion, b.azar)
+	// Dos modos, un solo bot: en la mesa final juega el genoma de la final.
+	genoma := b.genoma
+	if b.contexto.Fase() == torneo.Final {
+		genoma = b.final
+	}
+	decision := genoma.Decidir(situacion, b.azar)
 	accion := estrategia.AAccion(decision, t)
 
 	b.detalle.Printf("[%-7s] %s %s | mesa %-14s | fuerza %3.0f%% (efectiva %3.0f%%) vs %d | %-10s | %s",
 		t.Estado.Etapa, t.Mano[0], t.Mano[1], cartas(t.Estado.Comunitarias),
-		fuerza*100, b.genoma.FuerzaEfectiva(situacion)*100, situacion.Rivales,
+		fuerza*100, genoma.FuerzaEfectiva(situacion)*100, situacion.Rivales,
 		describir(accion), decision.Motivo)
 	return accion
 }
@@ -315,6 +344,11 @@ func main() {
 		Log: log.New(capturaID{destino: bot.eventos.Writer(), alVerID: func(id string) {
 			bot.protegido("Identificar", func() { bot.contexto.Identificar(id) })
 		}}, "sdk: ", log.LstdFlags|log.Lmicroseconds),
+	}
+	if opciones.Token == "" {
+		// El token del equipo se toma de la variable de entorno: así no queda
+		// en la línea de comandos (ni en los logs ni en la lista de procesos).
+		opciones.Token = os.Getenv("POKERFIGHT_TOKEN")
 	}
 	if opciones.Token == "" {
 		opciones.Token = nombreBot

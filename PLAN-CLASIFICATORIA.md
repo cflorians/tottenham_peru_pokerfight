@@ -5,7 +5,7 @@ Lo común (infraestructura, simulador, calendario, preguntas, riesgos) está en 
 
 ## Estado
 
-_Última actualización: vie 13/11/2026._ **A1 hecha** (`Simulaciones/a1_b1_linea_base.md`). En el campo mixto con 20 inscritos: M1 de la v0 57,8 %, Darwin original 35,8 %, Novato 66,2 %. La v0 quiebra 13-18 % por ronda en las rondas 2 a 6 y Novato la supera en todos los campos: la v1 tiene que ganarle a Novato. Sigue A2.
+_Última actualización: vie 13/11/2026._ **A1 y A2 hechas; la v1 está promovida** (`Simulaciones/a2_b2_v1.md`). En el campo mixto con 20 inscritos (campos nuevos, con Espía y Estadístico): M1 de la v1 71,9 % (v0 53,1 %, Novato 65,3 %) y M1b 32,0 % (v0 7,9 %). En 300 mesas reales: neto +7 489 contra +5 136, quiebra 7,7 % contra 8,7 %. Punto flojo: quiebra 15 % en la ronda 1 y 8 % en la 2 (más contra bots que van all-in seguido). Sigue A3.
 
 ## 1. Objetivo
 
@@ -102,10 +102,10 @@ Cada paso se mide contra la versión anterior con la prueba de promoción del ma
 
 ### A2 · Reentrenar lo que ya existe (vie 13) → versión v1
 
-- [ ] Fitness = `U` media en ligas simuladas (mismas cartas para toda la generación), en vez de bb/100.
-- [ ] Reentrenar los 18 genes actuales sin tocar la política. Estimación: horas (cada liga son ~1 500 manos);
-      se entrena de noche.
-- [ ] Validar en la arena real y promover.
+- [x] Fitness = `U` media en ligas simuladas (mismas cartas para toda la generación), en vez de bb/100
+      (`entrenamiento/genetico_liga.go`, `cmd/entrenar-liga`).
+- [x] Reentrenar los 18 genes actuales sin tocar la política. Tarda 10 minutos, no horas.
+- [x] Validar en la arena real (300 mesas por versión, `pruebas/mesas.py`) y promover.
 
 ### A3 · Política nueva (sáb 14 - lun 16) → versión v3
 

@@ -60,9 +60,13 @@ func (c Campo) Armar(n int) []TipoBot {
 // Campos arma los cuatro campos de prueba del plan. `darwin` es el genoma
 // original de Gato Darwin y `prudente` el de la v0.
 //
-// Límite conocido: el simulador rápido no tiene réplicas de Michi Espía, Bot
-// Estadístico ni Gato Bandido. En el campo "kit" los reemplaza Darwin, que es
-// el más fuerte de los que sí están.
+// Límite conocido: el simulador rápido no tiene réplica de Gato Bandido, y las
+// de Michi Espía y Bot Estadístico son aproximadas (ver replicas.go).
+//
+// Historia: hasta el 14/11 los campos "kit" y "mixto" no tenían a Espía ni a
+// Estadístico, y un genoma entrenado así ganaba mucho en el simulador pero
+// poco contra esos dos bots en la arena real. Las cifras de
+// Simulaciones/a1_b1_linea_base.md son de los campos viejos.
 func Campos(darwin, prudente estrategia.Genoma) []Campo {
 	var (
 		aleatorio   = TipoBot{"aleatorio", Aleatorio{}}
@@ -74,15 +78,17 @@ func Campos(darwin, prudente estrategia.Genoma) []Campo {
 		estacion    = TipoBot{"estacion", Estacion{}}
 		tDarwin     = TipoBot{"darwin", darwin}
 		tPrudente   = TipoBot{"prudente", prudente}
+		espia       = TipoBot{"espia", Espia{}}
+		estadistico = TipoBot{"estadistico", Estadistico{}}
 	)
 	return []Campo{
 		// Los equipos entregan los bots del kit casi sin cambios.
-		{"kit", []TipoBot{aleatorio, conservador, base, novato, tDarwin}, []float64{1, 1, 2, 2, 3}},
+		{"kit", []TipoBot{aleatorio, conservador, base, novato, tDarwin, espia, estadistico}, []float64{1, 1, 1.5, 1.5, 2, 2, 2}},
 		// Muchos bots que suben y van all-in: se eliminan entre ellos rápido.
 		{"agresivo", []TipoBot{maniaco, aleatorio, tDarwin, estacion, base}, []float64{3, 2, 3, 1, 1}},
 		// Muchos bots que esperan cartas: llegan casi todos a la ronda 10.
 		{"tight", []TipoBot{roca, novato, base, conservador, tPrudente}, []float64{3, 2, 2, 1, 2}},
 		// Un poco de todo: es el campo de las pruebas de promoción.
-		{"mixto", []TipoBot{aleatorio, conservador, base, novato, roca, maniaco, estacion, tDarwin, tPrudente}, []float64{1, 1, 1, 1, 1, 1, 1, 1, 1}},
+		{"mixto", []TipoBot{aleatorio, conservador, base, novato, roca, maniaco, estacion, tDarwin, tPrudente, espia, estadistico}, []float64{1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 1.5}},
 	}
 }

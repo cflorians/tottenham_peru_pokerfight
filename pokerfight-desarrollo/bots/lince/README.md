@@ -3,8 +3,9 @@
 Nombre de trabajo; se puede cambiar. Parte de **Gato Darwin** (`bots/darwin`, de AICS PUCP): política con
 números evolucionados por un algoritmo genético y fuerza de la mano por Monte Carlo.
 
-**Versión actual: v0.** Juega igual que Darwin con el genoma prudente (`Simulaciones/genoma_prudente.json`); lo
-nuevo es la infraestructura para aguantar el campeonato entero. El plan está en `../../../PLAN-BOT.md` y las
+**Versión actual: v1.** La política es la de Darwin, pero el genoma se entrenó con lo que premia el torneo
+(llegar a la final y terminar 1.º en ligas simuladas de 10 rondas) en vez de las fichas por mano, y alrededor
+está la infraestructura para aguantar el campeonato entero. Resultados: `Simulaciones/a2_b2_v1.md`. El plan está en `../../../PLAN-BOT.md` y las
 reglas de trabajo en equipo (ramas, PR, archivos compartidos, token) en `../../../AGENTS.md`.
 
 ## Qué agrega sobre Darwin
@@ -17,7 +18,8 @@ reglas de trabajo en equipo (ramas, PR, archivos compartidos, token) en `../../.
 | Supervisor (`correr.ps1`) | Relanza el proceso si muere; una sola instancia por máquina |
 | Log a archivo | Cada decisión, cambio de mesa y reconexión, en `datos/lince-AAAAMMDD.log` |
 
-En v0 el contexto de torneo **solo se registra**: todavía no cambia cómo juega.
+El contexto de torneo decide **con qué genoma se juega**: `genoma.json` en la clasificatoria y
+`genoma_final.json` al detectar la mesa final (hoy son el mismo genoma: uno aparte para la final no dio mejor).
 
 ## Compilar y probar
 
@@ -48,6 +50,32 @@ go run ./bots/lince/cmd/simular-liga -heroes v0,otro.json    # comparar un genom
 Los supuestos donde las bases no dicen nada (orden de los eliminados, mesas con pocos jugadores) están
 comentados en `entrenamiento/liga.go`. Resultados de referencia: `Simulaciones/a1_b1_linea_base.md`.
 
+Con más de un bot en `-heroes`, todos juegan las mismas ligas y el reporte trae la **diferencia contra el
+primero, liga por liga, con su intervalo**: es la comparación de la prueba de promoción.
+
+## Entrenar con el premio del torneo
+
+`entrenar-liga` evoluciona un genoma midiendo lo que premia el torneo, no las ciegas ganadas por mano:
+
+```bash
+go run ./bots/lince/cmd/entrenar-liga -modo clasificatoria   # aptitud = premio esperado de la liga -> genoma_clasificatoria.json
+go run ./bots/lince/cmd/entrenar-liga -modo final            # aptitud = % de mesas finales ganadas  -> genoma_final.json
+go run ./bots/lince/cmd/entrenar-liga -rapido                # prueba de humo (no escribe en la carpeta del bot)
+```
+
+No pisa `genoma.json`: deja el campeón en un archivo aparte, elegido con torneos que el genético nunca vio.
+Tarda unos 10 minutos con los valores por defecto.
+
+## Validar en la arena real
+
+`pruebas/mesas.py` juega muchas mesas con los bots de verdad del kit (una ronda de clasificatoria, o una mesa
+final con `-final`) y resume neto, quiebras y timeouts de Lince con cada genoma:
+
+```bash
+python bots/lince/pruebas/mesas.py -mesas 40 v0=bots/lince/genoma.json v1=bots/lince/genoma_clasificatoria.json
+python bots/lince/pruebas/mesas.py -final -mesas 50 v0=bots/lince/genoma.json final=bots/lince/genoma_final.json
+```
+
 ## Correrlo
 
 En una mesa o un torneo de la arena local (termina cuando la mesa cierra, no escribe archivos):
@@ -59,25 +87,27 @@ En una mesa o un torneo de la arena local (termina cuando la mesa cierra, no esc
 Contra un servidor de la organización, siempre con el supervisor:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File bots\lince\correr.ps1 -Addr HOST:PUERTO -Token TU_TOKEN -Nuevo
+powershell -ExecutionPolicy Bypass -File bots\lince\correr.ps1 -Addr HOST:PUERTO -Nuevo
 ```
 
 - `-Nuevo` aparta el estado guardado. **Solo al empezar un torneo**, nunca al relanzar a mitad.
 - En el **servidor de pruebas** agregar `-Fase clasificatoria`: ahí todos vuelven a 10 000 fichas en cada
   ronda, y una mesa de 6 se confundiría con la final.
-- El token también se puede pasar en la variable `POKERFIGHT_TOKEN`.
+- El token se toma de la variable `POKERFIGHT_TOKEN` (ver cómo guardarla en `AGENTS.md`). No hace falta pasar
+  `-Token`, y así no queda en la línea de comandos.
 
 Flags del bot:
 
 | Flag | Por defecto | Para qué |
 | --- | --- | --- |
-| `-addr`, `-token` | `localhost:9000`, `lince` | Servidor y credencial |
+| `-addr`, `-token` | `localhost:9000`, variable `POKERFIGHT_TOKEN` | Servidor y credencial |
 | `-datos carpeta` | `lince-datos` | Dónde van el estado y el log |
 | `-fase` | `auto` | `auto`, `clasificatoria` o `final` |
 | `-una-partida` | no | Termina cuando la mesa cierra en vez de reconectar |
 | `-sin-archivos` | no | No escribe estado ni log |
 | `-silencioso` | no | No imprime cada decisión en la terminal |
 | `-genoma`, `-semilla`, `-muestras` | | Los de Darwin |
+| `-genoma-final` | | Genoma de la final en lugar del incluido. Con `-genoma` y sin este flag, la final usa el de `-genoma` |
 
 ## Cómo deduce la ronda y la final
 
@@ -105,6 +135,11 @@ recompilar con otras opciones (`-trimpath`, `-ldflags=-s`) suele dar un binario 
 | `entrenamiento/`, `cmd/entrenar-lince/` | Entrenador genético (sin cambios respecto de Darwin) |
 | `entrenamiento/liga.go`, `campos.go` | Simulador del torneo entero: liga de 10 rondas con fichas arrastradas, mesa final y campos de rivales |
 | `cmd/simular-liga/` | Mide M1, M1b y M2 de un bot en miles de torneos simulados |
-| `genoma.json` | Genoma con el que juega (v0: el prudente). `genoma_darwin.json` es el original |
+| `entrenamiento/genetico_liga.go`, `cmd/entrenar-liga/` | Entrenador con aptitud de liga o de mesa final |
+| `pruebas/mesas.py` | Mesas reales en condiciones de torneo para comparar genomas |
+| `genoma.json` | Genoma de la clasificatoria (v1). Lo incluye el binario |
+| `genoma_final.json` | Genoma de la mesa final (hoy, el mismo de la v1). Lo incluye el binario |
+| `genoma_clasificatoria.json` | Última salida de `entrenar-liga -modo clasificatoria` (candidato; no lo usa el bot) |
+| `genoma_v0.json`, `genoma_darwin.json` | El prudente de la v0 y el original de Darwin: referencia y rivales del simulador |
 | `correr.ps1` | Supervisor |
 | `pruebas/robustez.py` | Prueba de robustez contra la mesa real |
