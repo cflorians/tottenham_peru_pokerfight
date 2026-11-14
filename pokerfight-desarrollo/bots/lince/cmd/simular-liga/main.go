@@ -53,6 +53,9 @@ func tramoDe(relativo float64) int {
 	return 0
 }
 
+// politicaFinal, si no es nil, es con qué juegan los héroes la mesa final.
+var politicaFinal estrategia.Politica
+
 type heroe struct {
 	nombre   string
 	politica estrategia.Politica
@@ -135,7 +138,7 @@ func main() {
 	log.SetFlags(0)
 	var (
 		listaN      = flag.String("n", "20", "participantes por liga, separados por coma (por ejemplo 15,20,30,40)")
-		listaCampos = flag.String("campos", "kit,agresivo,tight,mixto", "campos de rivales a simular")
+		listaCampos = flag.String("campos", "kit,agresivo,tight,mixto,fuerte", "campos de rivales a simular (fuerte solo existe si hay genomas en la carpeta rivales)")
 		listaHeroes = flag.String("heroes", "v0,darwin,novato", "bots a medir: v0 (genoma_v0.json), actual (genoma.json), final (genoma_final.json), darwin, novato, o la ruta de un genoma .json")
 		ligas       = flag.Int("ligas", 2000, "ligas por héroe, campo y tamaño")
 		listaTopes  = flag.String("topes", "150,500,0", "topes de manos de la mesa final (0 = sin reloj)")
@@ -145,11 +148,17 @@ func main() {
 		dir         = flag.String("dir", dirDelBot(), "carpeta del bot (genomas y caché)")
 		rutaCache   = flag.String("cache", filepath.Join("datos", "biblioteca-liga.cache"), "caché de la biblioteca, relativa a -dir (vacío para no usar)")
 		paridad     = flag.Bool("paridad", false, "en vez de ligas, juega mesas sueltas de una ronda con las alineaciones de Simulaciones/pruebas_formato_real.md, para comparar el simulador con la arena real")
+		diagnostico = flag.Bool("diagnostico", false, "en vez de ligas, cuenta con qué jugada se queda sin fichas el primer héroe en mesas sueltas de una ronda")
+		rutaFinal   = flag.String("genoma-final", "", "genoma con el que los héroes juegan la mesa final (por defecto, el mismo de la liga)")
 		tabla       = flag.Bool("tabla", false, "imprimir las tablas de valor P(final) y P(1.º) por ronda y stack")
 	)
 	flag.Parse()
 
 	darwin := leerGenoma(filepath.Join(*dir, "genoma_darwin.json"))
+	fuertes, err := entrenamiento.LeerRivales(filepath.Join(*dir, "rivales"))
+	if err != nil {
+		log.Fatalf("rivales: %v", err)
+	}
 	prudente := leerGenoma(filepath.Join(*dir, "genoma_v0.json"))
 
 	var heroes []heroe
@@ -169,11 +178,14 @@ func main() {
 			heroes = append(heroes, heroe{strings.TrimSuffix(filepath.Base(nombre), ".json"), leerGenoma(nombre)})
 		}
 	}
+	if *rutaFinal != "" {
+		politicaFinal = leerGenoma(*rutaFinal)
+	}
 	tamanos := enteros(*listaN)
 	topes := enteros(*listaTopes)
 
 	var campos []entrenamiento.Campo
-	for _, c := range entrenamiento.Campos(darwin, prudente) {
+	for _, c := range entrenamiento.Campos(darwin, prudente, fuertes...) {
 		if strings.Contains(","+*listaCampos+",", ","+c.Nombre+",") {
 			campos = append(campos, c)
 		}
@@ -202,6 +214,10 @@ func main() {
 	fmt.Fprintf(os.Stderr, "\nbiblioteca lista: %d repartos (%s)\n", len(bib), time.Since(inicio).Round(time.Second))
 
 	cfgLiga := entrenamiento.LigaDeLasBases()
+	if *diagnostico {
+		informarDiagnostico(cfgLiga, heroes[0], campos, bib, *ligas, *semilla)
+		return
+	}
 	if *paridad {
 		informarParidad(cfgLiga, darwin, prudente, bib, *ligas, *semilla)
 		return
@@ -279,6 +295,9 @@ func simular(cfg entrenamiento.ConfigLiga, he heroe, rivales []entrenamiento.Tip
 						finalistas = append(finalistas, politicas[f])
 						if f == 0 {
 							miSilla = i
+							if politicaFinal != nil {
+								finalistas[i] = politicaFinal
+							}
 						}
 					}
 					for t, tope := range topes {

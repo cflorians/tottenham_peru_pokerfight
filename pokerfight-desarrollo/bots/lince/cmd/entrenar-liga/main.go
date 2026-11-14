@@ -37,6 +37,7 @@ func main() {
 		validacion   = flag.Int("validacion", 500, "ligas por campo (o finales/10) para elegir al campeón con torneos nunca vistos")
 		listaN       = flag.String("n", "15,20,30", "inscritos por liga; se alternan (modo clasificatoria)")
 		listaTopes   = flag.String("topes", "150,500,0", "topes de manos de la final; se alternan (modo final)")
+		conFinal     = flag.Bool("con-final", false, "modo clasificatoria: cada liga en que clasifica juega también su mesa final (con -topes) y la aptitud es el premio realmente cobrado, en vez de suponer -m2")
 		m2           = flag.Float64("m2", 0.20, "probabilidad de ganar la final que se supone al valorar llegar a ella (modo clasificatoria)")
 		forma        = flag.Float64("forma", 3, "peso del puesto en la liga dentro de la aptitud de entrenamiento (modo clasificatoria)")
 		coevolucion  = flag.Int("coevolucion", 2, "rivales que se reemplazan por campeones de generaciones anteriores")
@@ -55,6 +56,10 @@ func main() {
 	}
 
 	darwin := leerGenoma(filepath.Join(*dir, "genoma_darwin.json"))
+	fuertes, err := entrenamiento.LeerRivales(filepath.Join(*dir, "rivales"))
+	if err != nil {
+		log.Fatalf("rivales: %v", err)
+	}
 	// genoma_v0.json es el prudente de la v0: se usa como rival y como
 	// referencia, y no cambia aunque se promueva otro genoma a genoma.json.
 	prudente := leerGenoma(filepath.Join(*dir, "genoma_v0.json"))
@@ -89,10 +94,13 @@ func main() {
 	var columnas []string
 	switch *modo {
 	case "clasificatoria":
-		campos := entrenamiento.Campos(darwin, prudente)
+		campos := entrenamiento.Campos(darwin, prudente, fuertes...)
 		a := entrenamiento.AptitudLiga{
 			Liga: entrenamiento.LigaDeLasBases(), Campos: campos, Tamanos: enteros(*listaN),
 			Ligas: *torneos, M2: *m2, Forma: *forma, Coevolucion: *coevolucion,
+		}
+		if *conFinal {
+			a.TopesFinal = enteros(*listaTopes)
 		}
 		v := a
 		v.Ligas, v.Forma, v.Coevolucion = *validacion, 0, 0
@@ -104,7 +112,7 @@ func main() {
 	case "final":
 		topes := enteros(*listaTopes)
 		a := entrenamiento.AptitudFinal{
-			Rivales: entrenamiento.Finalistas(darwin, prudente, clasificatoria), Topes: topes,
+			Rivales: entrenamiento.Finalistas(darwin, prudente, clasificatoria, fuertes...), Topes: topes,
 			Finales: *torneos * 10, Coevolucion: *coevolucion,
 		}
 		v := a
@@ -120,6 +128,7 @@ func main() {
 		TamTorneo: 3, ProbCruce: 0.9, ProbMutacion: 0.15, Sigma: 0.12, Semilla: *semilla, Hilos: *hilos,
 	}
 	iniciales := []estrategia.Genoma{clasificatoria, prudente, darwin, estrategia.GenomaInicial()}
+	iniciales = append(iniciales, fuertes...)
 
 	fmt.Printf("modo %s: población %d, %d generaciones, %d torneos por evaluación\n\n", *modo, cfg.Poblacion, cfg.Generaciones, *torneos)
 	fmt.Println("  gen      mejor   promedio       peor   tiempo")

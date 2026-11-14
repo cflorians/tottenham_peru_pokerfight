@@ -53,6 +53,10 @@ go run ./bots/lince/cmd/simular-liga -heroes v0,otro.json    # comparar un genom
 Los supuestos donde las bases no dicen nada (orden de los eliminados, mesas con pocos jugadores) están
 comentados en `entrenamiento/liga.go`. Resultados de referencia: `Simulaciones/a1_b1_linea_base.md`.
 
+Otros modos: `-diagnostico` cuenta con qué jugada se queda sin fichas el bot; `-paridad` compara el simulador
+con la arena real; `-genoma-final otro.json` hace que el bot juegue la mesa final con otro genoma. Si hay
+genomas en `rivales/`, se agrega el campo **fuerte** (la mitad de los inscritos son esos genomas).
+
 Con más de un bot en `-heroes`, todos juegan las mismas ligas y el reporte trae la **diferencia contra el
 primero, liga por liga, con su intervalo**: es la comparación de la prueba de promoción.
 
@@ -66,7 +70,8 @@ go run ./bots/lince/cmd/entrenar-liga -modo final            # aptitud = % de me
 go run ./bots/lince/cmd/entrenar-liga -rapido                # prueba de humo (no escribe en la carpeta del bot)
 ```
 
-No pisa `genoma.json`: deja el campeón en un archivo aparte, elegido con torneos que el genético nunca vio.
+Con `-con-final`, cada liga en que el genoma clasifica juega también su mesa final y la aptitud es el premio
+realmente cobrado. No pisa `genoma.json`: deja el campeón en un archivo aparte, elegido con torneos que el genético nunca vio.
 Tarda unos 10 minutos con los valores por defecto.
 
 ## Validar en la arena real
@@ -155,6 +160,7 @@ recompilar con otras opciones (`-trimpath`, `-ldflags=-s`) suele dar un binario 
 | `genoma.json` | Genoma de la clasificatoria (v1.1). Lo incluye el binario |
 | `genoma_final.json` | Genoma de la mesa final (hoy, el mismo de la v1.1). Lo incluye el binario |
 | `genoma_clasificatoria.json` | Última salida de `entrenar-liga -modo clasificatoria` (candidato; no lo usa el bot) |
+| `rivales/*.json` | Genomas nuestros ya entrenados: son los rivales del campo "fuerte" del simulador |
 | `genoma_v0.json`, `genoma_darwin.json` | El prudente de la v0 y el original de Darwin: referencia y rivales del simulador |
 | `correr.ps1` | Supervisor |
 | `pruebas/robustez.py` | Prueba de robustez contra la mesa real |

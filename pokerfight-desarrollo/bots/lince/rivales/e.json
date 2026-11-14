@@ -1,0 +1,27 @@
+{
+  "bot": "Lince · genoma de clasificatoria",
+  "generacion": 80,
+  "aptitud_bb_100": 33.864,
+  "semilla": 2026,
+  "fecha": "2026-11-14 15:02",
+  "genes": {
+    "aversion_riesgo": 0.122,
+    "bono_posicion": 0.0375,
+    "farol_post": 0.3169,
+    "farol_pre": 0.0276,
+    "farol_subida": 0.0006,
+    "margen_pago_post": 1.7953,
+    "margen_pago_pre": 0.921,
+    "multijugador": 0.2791,
+    "presion": 0.15,
+    "tam_apertura": 2.493,
+    "tam_farol": 1.0645,
+    "tam_subida": 0.4067,
+    "tam_valor": 0.2537,
+    "umbral_allin": 0.7909,
+    "umbral_apuesta_post": 0.3335,
+    "umbral_apuesta_pre": 0.4182,
+    "umbral_subida_post": 0.7233,
+    "umbral_subida_pre": 0.4
+  }
+}

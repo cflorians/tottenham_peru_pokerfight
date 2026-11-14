@@ -1,6 +1,11 @@
 package entrenamiento
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
+
 	"github.com/aicspucp/pokerfight-arena-participantes/bots/lince/estrategia"
 )
 
@@ -67,7 +72,12 @@ func (c Campo) Armar(n int) []TipoBot {
 // Estadístico, y un genoma entrenado así ganaba mucho en el simulador pero
 // poco contra esos dos bots en la arena real. Las cifras de
 // Simulaciones/a1_b1_linea_base.md son de los campos viejos.
-func Campos(darwin, prudente estrategia.Genoma) []Campo {
+//
+// `fuertes` son genomas nuestros ya entrenados (los de bots/lince/rivales). Si
+// hay alguno se agrega el campo "fuerte": otros equipos pueden llegar con bots
+// tan buenos como el nuestro, y un genoma que solo se midió contra los bots
+// del kit puede ser fácil de explotar por uno que juegue como él.
+func Campos(darwin, prudente estrategia.Genoma, fuertes ...estrategia.Genoma) []Campo {
 	var (
 		aleatorio   = TipoBot{"aleatorio", Aleatorio{}}
 		conservador = TipoBot{"conservador", Conservador{}}
@@ -81,7 +91,7 @@ func Campos(darwin, prudente estrategia.Genoma) []Campo {
 		espia       = TipoBot{"espia", Espia{}}
 		estadistico = TipoBot{"estadistico", Estadistico{}}
 	)
-	return []Campo{
+	campos := []Campo{
 		// Los equipos entregan los bots del kit casi sin cambios.
 		{"kit", []TipoBot{aleatorio, conservador, base, novato, tDarwin, espia, estadistico}, []float64{1, 1, 1.5, 1.5, 2, 2, 2}},
 		// Muchos bots que suben y van all-in: se eliminan entre ellos rápido.
@@ -91,4 +101,38 @@ func Campos(darwin, prudente estrategia.Genoma) []Campo {
 		// Un poco de todo: es el campo de las pruebas de promoción.
 		{"mixto", []TipoBot{aleatorio, conservador, base, novato, roca, maniaco, estacion, tDarwin, tPrudente, espia, estadistico}, []float64{1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 1.5}},
 	}
+	if len(fuertes) > 0 {
+		// La mitad del campo son genomas entrenados como el nuestro; el
+		// resto, los mejores bots del kit.
+		fuerte := Campo{Nombre: "fuerte", Tipos: []TipoBot{novato, espia, estadistico, roca}, Pesos: []float64{1, 1, 1, 1}}
+		for i, g := range fuertes {
+			fuerte.Tipos = append(fuerte.Tipos, TipoBot{"entrenado-" + string(rune('a'+i)), g})
+			fuerte.Pesos = append(fuerte.Pesos, 4/float64(len(fuertes)))
+		}
+		campos = append(campos, fuerte)
+	}
+	return campos
+}
+
+// LeerRivales lee todos los genomas .json de una carpeta, en orden alfabético.
+// Una carpeta que no existe o está vacía no es un error: no hay campo fuerte.
+func LeerRivales(carpeta string) ([]estrategia.Genoma, error) {
+	rutas, err := filepath.Glob(filepath.Join(carpeta, "*.json"))
+	if err != nil {
+		return nil, err
+	}
+	sort.Strings(rutas)
+	var genomas []estrategia.Genoma
+	for _, ruta := range rutas {
+		datos, err := os.ReadFile(ruta)
+		if err != nil {
+			return nil, err
+		}
+		g, _, err := estrategia.LeerGenoma(datos)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", ruta, err)
+		}
+		genomas = append(genomas, g)
+	}
+	return genomas, nil
 }

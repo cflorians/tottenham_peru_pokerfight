@@ -140,9 +140,16 @@ type AptitudLiga struct {
 	Tamanos []int // Cantidades de inscritos; se alternan entre las ligas.
 	Ligas   int   // Ligas por campo en cada evaluación.
 	// M2 es la probabilidad de ganar la final estando en ella: el peso de
-	// "llegar a la final" en el premio esperado. El plan usa 0,20 hasta que
-	// el plan B la mida.
+	// "llegar a la final" en el premio esperado. Solo se usa si TopesFinal
+	// está vacío.
 	M2 float64
+	// TopesFinal, si no está vacío, hace que cada liga en que el genoma
+	// clasifica juegue además su mesa final (con los finalistas de esa liga y
+	// uno de estos topes de manos, alternados): el premio de "llegar" deja de
+	// ser 60 × M2 y pasa a ser 60 si gana la final y 0 si no. Es el objetivo
+	// real del torneo, y castiga a un genoma que clasifica bien pero pierde
+	// la final contra los rivales que llegan con él.
+	TopesFinal []int
 	// Forma suma hasta este valor según el puesto en la liga (todo al 1.º,
 	// nada al último). "Clasificó o no" es un dato de sí o no y con pocas
 	// ligas es puro ruido; el puesto dice además cuán cerca estuvo, y le da
@@ -155,14 +162,35 @@ type AptitudLiga struct {
 
 // Evaluar implementa AptitudFunc. Aptitud es el premio esperado en soles (más
 // la forma); PorEscenario trae, por campo, U, M1 y M1b en ese orden, y al
-// final U, M1 y M1b del conjunto.
+// final U, M1 y M1b del conjunto. Con TopesFinal, U es el premio realmente
+// cobrado (60 por final ganada y 30 por terminar 1.º).
 func (a AptitudLiga) Evaluar(g estrategia.Genoma, campeones []estrategia.Genoma, bib Biblioteca, semilla uint64) Evaluacion {
 	ev := Evaluacion{PorEscenario: make([]float64, 0, 3*len(a.Campos)+3)}
-	var finalTotal, primeroTotal, formaTotal float64
+	var finalTotal, primeroTotal, formaTotal, premioTotal float64
 	politicas := make([]estrategia.Politica, 0, 64)
+	finalistas := make([]estrategia.Politica, 0, 8)
+	// valorFinal es lo que vale haber clasificado en la liga k.
+	valorFinal := func(res ResultadoLiga, k int, s uint64) float64 {
+		if len(a.TopesFinal) == 0 {
+			return 60 * a.M2
+		}
+		finalistas = finalistas[:0]
+		yo := 0
+		for i, f := range res.Finalistas {
+			finalistas = append(finalistas, politicas[f])
+			if f == 0 {
+				yo = i
+			}
+		}
+		tope := a.TopesFinal[k%len(a.TopesFinal)]
+		if ganador, _ := JugarFinal(FinalDeLasBases(tope), finalistas, bib, int((s>>7)%uint64(len(bib))), s^0xF1A1); ganador == yo {
+			return 60
+		}
+		return 0
+	}
 
 	for c, campo := range a.Campos {
-		var final, primero float64
+		var final, primero, premio float64
 		for k := 0; k < a.Ligas; k++ {
 			n := a.Tamanos[k%len(a.Tamanos)]
 			politicas = append(politicas[:0], g)
@@ -178,20 +206,23 @@ func (a AptitudLiga) Evaluar(g estrategia.Genoma, campeones []estrategia.Genoma,
 			res := JugarLiga(a.Liga, politicas, bib, int(s%uint64(len(bib))), s)
 			if res.EsFinalista(0) {
 				final++
+				premio += valorFinal(res, k, s)
 			}
 			if res.Primero() == 0 {
 				primero++
+				premio += 30
 			}
 			formaTotal += 1 - float64(res.Puesto[0]-1)/float64(n-1)
 			ev.ManosJugadas += a.Liga.Rondas * a.Liga.ManosPorRonda
 		}
 		ligas := float64(a.Ligas)
-		ev.PorEscenario = append(ev.PorEscenario, 60*a.M2*final/ligas+30*primero/ligas, final/ligas, primero/ligas)
+		ev.PorEscenario = append(ev.PorEscenario, premio/ligas, final/ligas, primero/ligas)
 		finalTotal += final
 		primeroTotal += primero
+		premioTotal += premio
 	}
 	total := float64(a.Ligas * len(a.Campos))
-	u := 60*a.M2*finalTotal/total + 30*primeroTotal/total
+	u := premioTotal / total
 	ev.PorEscenario = append(ev.PorEscenario, u, finalTotal/total, primeroTotal/total)
 	ev.Aptitud = u + a.Forma*formaTotal/total
 	return ev
@@ -265,8 +296,12 @@ func (a AptitudFinal) Evaluar(g estrategia.Genoma, campeones []estrategia.Genoma
 // frecuencia (Simulaciones/a1_b1_linea_base.md, campo mixto con 20 inscritos),
 // más el propio bot de clasificatoria, que puede ser cualquiera de los otros
 // equipos que copie una idea parecida.
-func Finalistas(darwin, prudente, clasificatoria estrategia.Genoma) Campo {
-	return Campo{
+//
+// `fuertes` son genomas nuestros ya entrenados: a la final llegan los mejores,
+// así que si algún equipo trae un bot tan bueno como el nuestro, va a estar
+// ahí. Entre todos pesan como el 40 % de los rivales.
+func Finalistas(darwin, prudente, clasificatoria estrategia.Genoma, fuertes ...estrategia.Genoma) Campo {
+	c := Campo{
 		Nombre: "finalistas",
 		Tipos: []TipoBot{
 			{"novato", Novato{}}, {"roca", Roca{}}, {"prudente", prudente}, {"darwin", darwin}, {"base", Base{}},
@@ -275,4 +310,9 @@ func Finalistas(darwin, prudente, clasificatoria estrategia.Genoma) Campo {
 		},
 		Pesos: []float64{1.32, 1.38, 1.14, 0.71, 0.46, 0.15, 0.13, 0.08, 0.04, 0.60},
 	}
+	for i, g := range fuertes {
+		c.Tipos = append(c.Tipos, TipoBot{"entrenado-" + string(rune('a'+i)), g})
+		c.Pesos = append(c.Pesos, 4/float64(len(fuertes)))
+	}
+	return c
 }

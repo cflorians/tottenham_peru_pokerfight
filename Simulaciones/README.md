@@ -12,6 +12,8 @@ Resultados de pruebas y simulaciones del equipo. Los planes citan estos archivos
 | [`a2_b2_v1.md`](a2_b2_v1.md) | **Lince v1 y v1.1**: genoma entrenado con el premio del torneo. Pruebas de promoción en el simulador, cientos de mesas y finales reales por versión (la v1.1 gana el 89 % de 80 finales), réplicas de Espía y Estadístico y paridad del simulador |
 | [`genoma_final_b2.json`](genoma_final_b2.json) | Genoma entrenado solo para ganar finales (B2). No supera al de la v1 en la final: no se usa |
 | [`servidor_pruebas.md`](servidor_pruebas.md) | Primera conexión al servidor de pruebas: token válido, forma de los `id_mano`, 3 manos por segundo, servidor inestable |
+| [`a3_campo_fuerte.md`](a3_campo_fuerte.md) | Qué pasa si otros equipos entrenan como nosotros: la v1.1 gana la final el 5-13 % en un campo de bots entrenados. No hay un genoma mejor que todos. Diagnóstico de quiebras, genomas candidatos y el selector adaptativo, descartado. El bot no cambia |
+| [`genoma_final_f2.json`](genoma_final_f2.json) | Genoma de final entrenado contra finalistas fuertes: les gana el 54 %, pero solo el 8 % a los del kit. No se usa |
 
 ## Cómo agregar un resultado
 

@@ -1,0 +1,27 @@
+{
+  "bot": "Lince · genoma de final",
+  "generacion": 50,
+  "aptitud_bb_100": 57.5667,
+  "semilla": 2026,
+  "fecha": "2026-11-14 13:16",
+  "genes": {
+    "aversion_riesgo": 0.0713,
+    "bono_posicion": 0.0329,
+    "farol_post": 0.4,
+    "farol_pre": 0.1265,
+    "farol_subida": 0,
+    "margen_pago_post": 1.7989,
+    "margen_pago_pre": 0.8659,
+    "multijugador": 0.2734,
+    "presion": 0.1487,
+    "tam_apertura": 2.6891,
+    "tam_farol": 1.0295,
+    "tam_subida": 0.4269,
+    "tam_valor": 0.25,
+    "umbral_allin": 0.9802,
+    "umbral_apuesta_post": 0.304,
+    "umbral_apuesta_pre": 0.3594,
+    "umbral_subida_post": 0.7612,
+    "umbral_subida_pre": 0.4042
+  }
+}

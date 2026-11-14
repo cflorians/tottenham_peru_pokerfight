@@ -5,7 +5,7 @@ Lo común (infraestructura, simulador, calendario, preguntas, riesgos) está en 
 
 ## Estado
 
-_Última actualización: vie 13/11/2026._ **B1 y B2 hechas** (`Simulaciones/a2_b2_v1.md`). El genoma de la v1.1 gana el **89 % de 80 finales reales** contra los bots del kit (v1: 81 % de 140; v0: 30 % de 60) y 78-88 % en el simulador con tope de 500 manos o sin tope. Un genoma entrenado solo para finales (`Simulaciones/genoma_final_b2.json`) no lo supera: la final se juega con el genoma de la v1. El bot ya cambia de genoma al detectar la final. En el servidor de pruebas se jugaron 3 manos por segundo: la final se decidiría por eliminación y el reloj (B3) pierde prioridad. Sigue B3, empezando por la mesa corta.
+_Última actualización: vie 13/11/2026._ **B1 y B2 hechas** (`Simulaciones/a2_b2_v1.md`). El genoma de la v1.1 gana el **89 % de 80 finales reales** contra los bots del kit (v1: 81 % de 140; v0: 30 % de 60) y 78-88 % en el simulador con tope de 500 manos o sin tope. Un genoma entrenado solo para finales (`Simulaciones/genoma_final_b2.json`) no lo supera: la final se juega con el genoma de la v1. El bot ya cambia de genoma al detectar la final. En el servidor de pruebas se jugaron 3 manos por segundo: la final se decidiría por eliminación y el reloj (B3) pierde prioridad. **Riesgo abierto**: contra finalistas entrenados como nosotros la v1.1 gana solo el 5-13 % de las finales; hay dos genomas de cobertura (`e`: 30 % contra ellos y 79-83 % contra el kit; F2: 54 % y 8 %) y un selector adaptativo que se probó y no sirve (`Simulaciones/a3_campo_fuerte.md`). Decidir cuál usar necesita ver rivales reales. Sigue B4 (reconocer al rival por cómo juega), antes que B3.
 
 ## 1. Objetivo
 

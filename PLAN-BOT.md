@@ -50,6 +50,10 @@ _Última actualización: sáb 14/11/2026 (v1.1 promovida; primera conexión al s
 - **Corregido**: si el bot volvía a mitad de una mano, la mesa no le repetía sus cartas y la decisión
   fallaba (jugaba la acción segura con un error en el log). Ahora guarda sus cartas en memoria y en disco y
   sigue la mano. Lo destapó la prueba de robustez.
+- **Hallazgo (sáb 14/11, tarde)**: la v1.1 es explotable por bots entrenados como ella. En un campo donde la
+  mitad son genomas nuestros, gana la final solo el 5-13 %; y el genoma que les gana a esos pierde contra el
+  kit. No hay un genoma mejor que todos, y un selector que elige sobre la marcha según lo que gana no
+  funciona. **El bot no cambia** hasta ver rivales reales (`Simulaciones/a3_campo_fuerte.md`).
 - **Próximo paso**: la política nueva (A3). Lo que más duele hoy son los campos con bots que van all-in
   seguido (quiebra 12 % y 17 % en las rondas 1 y 2 del campo agresivo) y que, cuidando el stack, se termina
   1.º menos veces en el campo tight. Falta avisar a la organización de las caídas del
@@ -279,7 +283,7 @@ Las líneas base de cada plan (A1 y B1) se corren apenas esté el simulador.
 | El bot se cree en la final estando en la clasificatoria (o al revés) | Estado en disco, flag `-fase`, y ante la duda modo clasificatoria |
 | Un plan mejora y rompe al otro | La prueba de promoción mide siempre las métricas de los dos |
 | El simulador rápido no se parece a la mesa real | Prueba de paridad antes de entrenar; validar cada versión en la arena real |
-| Sobreajuste a los bots del kit | Cuatro campos de prueba, coevolución, datos del servidor de pruebas |
+| Sobreajuste a los bots del kit | Cinco campos de prueba (el quinto, con genomas entrenados como el nuestro), coevolución, datos del servidor de pruebas. Riesgo abierto: la v1.1 pierde la final contra bots entrenados; hay genomas de cobertura listos (`Simulaciones/a3_campo_fuerte.md`) |
 | Atraso | Escalera de versiones y regla de recorte: siempre hay algo entregable |
 | Cambian las bases o el protocolo | `git pull` diario, recompilar, releer `docs/competencia.md` |
 
