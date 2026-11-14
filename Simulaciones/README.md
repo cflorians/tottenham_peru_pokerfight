@@ -14,6 +14,7 @@ Resultados de pruebas y simulaciones del equipo. Los planes citan estos archivos
 | [`servidor_pruebas.md`](servidor_pruebas.md) | Primera conexión al servidor de pruebas: token válido, forma de los `id_mano`, 3 manos por segundo, servidor inestable |
 | [`a3_campo_fuerte.md`](a3_campo_fuerte.md) | Qué pasa si otros equipos entrenan como nosotros: la v1.1 gana la final el 5-13 % en un campo de bots entrenados. No hay un genoma mejor que todos. Diagnóstico de quiebras, genomas candidatos y el selector adaptativo, descartado. El bot no cambia |
 | [`genoma_final_f2.json`](genoma_final_f2.json) | Genoma de final entrenado contra finalistas fuertes: les gana el 54 %, pero solo el 8 % a los del kit. No se usa |
+| [`genoma_final_eq.json`](genoma_final_eq.json) | Genoma de final entrenado con objetivo equilibrado: parejo (59 % contra mixto, 63 % contra fuertes) pero mediocre. No se usa |
 
 ## Cómo agregar un resultado
 

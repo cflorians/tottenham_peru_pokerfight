@@ -94,7 +94,52 @@ Probabilidad de ganar la final estando en ella (M2), sin tope de manos / con top
 - **Entrenar un solo genoma contra los cinco campos** (`e`): mejora en el fuerte y empeora en los otros
   cuatro. No es una mejora, es otro punto del mismo compromiso.
 
-## 6. Qué haría falta para decidir
+## 6. ¿Se pueden fusionar la v1.1 y la cobertura? (misma tarde)
+
+Tres intentos de conseguir un solo genoma de final bueno contra los dos tipos de rival. Probabilidad de ganar
+la final sin tope de manos, jugando la clasificatoria con la v1.1:
+
+| Genoma en la final | kit | agresivo | tight | mixto | fuerte |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| v1.1 | 89 % | 71 % | 92 % | 88 % | 5 % |
+| Mezcla de genes, 25 % de `e` | 88 % | | | 88 % | 10 % |
+| Mezcla de genes, 50 % de `e` | 85 % | | | 84 % | 15 % |
+| Mezcla de genes, 75 % de `e` | 83 % | | | 83 % | 17 % |
+| `e` | 79 % | 66 % | 83 % | 81 % | 30 % |
+| **Equilibrado** (`genoma_final_eq.json`) | 50 % | 27 % | 74 % | 59 % | 63 % |
+| Mezcla de genes, 50 % de F2 | 42 % | | | 47 % | 11 % |
+| F2 | 8 % | 14 % | 6 % | 10 % | 54 % |
+
+- **Mezclar genes** (promediar los 18 números) solo da puntos intermedios: lo que se gana contra los fuertes
+  se pierde contra el kit casi en proporción. Con F2 es peor: a medio camino queda malo contra los dos.
+- **Entrenar con objetivo equilibrado** (`entrenar-liga -modo final -equilibrado`: la mitad de las finales
+  contra finalistas tipo kit, la otra mitad contra los genomas de `rivales/`, y la aptitud es el **peor** de
+  los dos resultados): encuentra un genoma parejo (46 % contra cada grupo en su validación) pero mediocre
+  contra el kit. No existe, con esta política de 18 números, un genoma bueno contra los dos.
+- Según cuánta probabilidad se le dé a una final con bots fuertes (p): la v1.1 es la mejor si p < 26 %, `e`
+  entre 26 % y 43 %, y el equilibrado por encima de 43 %.
+
+### Por qué pierde la v1.1 contra los entrenados
+
+Cambiando un gen de la v1.1 por el del equilibrado, de a uno, el único que mueve la aguja es
+`umbral_subida_post` (de 0,68 a 0,45: **resubir mucho más seguido después del flop**): sube de 5 % a 14 %
+contra los fuertes, y baja de 88 % a 64 % contra el campo mixto. Los genomas entrenados apuestan chico y muy
+seguido con manos flojas; la respuesta que les gana es resubirles liviano. Esa misma respuesta pierde contra
+los bots del kit, que cuando apuestan tienen mano.
+
+De ahí sale la única fusión que puede funcionar: **que el umbral dependa de cada rival**. Resubir y pagar
+más liviano contra el que apuesta casi siempre, y como hasta ahora contra el que apuesta poco. Eso no es
+mezclar genomas sino darle a la política un dato nuevo (cuán seguido apuesta el rival que tengo delante): es
+el modelado de rivales del plan. Sirve también contra los bots que van all-in seguido, que es el otro punto
+flojo de la v1.1.
+
+### Un efecto de paso
+
+Subir solo `aversion_riesgo` a 0,29 en la final mejora las finales largas contra kit, tight y mixto (93 %,
+98 % y 95 % sin tope) y las empeora con tope de 150 o 500 manos (en mixto, 28 % y 74 % contra 40 % y 78 %) y
+contra el campo agresivo. Depende de cuánto dure la final de verdad: no se cambia hasta medir el ritmo real.
+
+## 7. Qué haría falta para decidir
 
 1. **Ver a los rivales reales** en el servidor de pruebas y clasificarlos: ¿se parecen a los bots del kit o
    juegan como un genoma entrenado (abren al mínimo, apuestan chico y seguido, no pagan apuestas grandes)?
@@ -102,7 +147,7 @@ Probabilidad de ganar la final estando en ella (M2), sin tope de manos / con top
    juega** (sus estadísticas, que se juntan en cada mano y sin arriesgar fichas) y no por cuánto ganamos.
    Es el modelado de rivales del plan (v5).
 
-## 7. Límites
+## 8. Límites
 
 - El campo fuerte está hecho con nuestros propios genomas: es el peor caso para nosotros, no una predicción.
 - Todo es simulador rápido; nada de esto se validó en la arena real porque el bot no cambió.

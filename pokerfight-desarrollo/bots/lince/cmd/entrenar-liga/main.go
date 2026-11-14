@@ -37,6 +37,7 @@ func main() {
 		validacion   = flag.Int("validacion", 500, "ligas por campo (o finales/10) para elegir al campeón con torneos nunca vistos")
 		listaN       = flag.String("n", "15,20,30", "inscritos por liga; se alternan (modo clasificatoria)")
 		listaTopes   = flag.String("topes", "150,500,0", "topes de manos de la final; se alternan (modo final)")
+		equilibrado  = flag.Bool("equilibrado", false, "modo final: la mitad de las finales contra finalistas tipo kit y la otra mitad contra los genomas de la carpeta rivales; la aptitud es el peor de los dos resultados")
 		conFinal     = flag.Bool("con-final", false, "modo clasificatoria: cada liga en que clasifica juega también su mesa final (con -topes) y la aptitud es el premio realmente cobrado, en vez de suponer -m2")
 		m2           = flag.Float64("m2", 0.20, "probabilidad de ganar la final que se supone al valorar llegar a ella (modo clasificatoria)")
 		forma        = flag.Float64("forma", 3, "peso del puesto en la liga dentro de la aptitud de entrenamiento (modo clasificatoria)")
@@ -115,11 +116,26 @@ func main() {
 			Rivales: entrenamiento.Finalistas(darwin, prudente, clasificatoria, fuertes...), Topes: topes,
 			Finales: *torneos * 10, Coevolucion: *coevolucion,
 		}
+		if *equilibrado {
+			if len(fuertes) == 0 {
+				log.Fatal("-equilibrado necesita genomas en la carpeta rivales")
+			}
+			a.Rivales = entrenamiento.Finalistas(darwin, prudente, clasificatoria)
+			// La final "fuerte": casi todos entrenados, con algún bot del kit.
+			a.Fuertes = entrenamiento.Campo{Nombre: "fuertes", Tipos: []entrenamiento.TipoBot{{Nombre: "novato", Politica: entrenamiento.Novato{}}, {Nombre: "espia", Politica: entrenamiento.Espia{}}}, Pesos: []float64{0.5, 0.5}}
+			for _, g := range fuertes {
+				a.Fuertes.Tipos = append(a.Fuertes.Tipos, entrenamiento.TipoBot{Nombre: "entrenado", Politica: g})
+				a.Fuertes.Pesos = append(a.Fuertes.Pesos, 4/float64(len(fuertes)))
+			}
+		}
 		v := a
 		v.Finales, v.Coevolucion = *validacion*10, 0
 		aptitud, aptitudValidacion = a.Evaluar, v.Evaluar
 		for _, t := range topes {
 			columnas = append(columnas, "M2 % tope "+strconv.Itoa(t))
+		}
+		if *equilibrado {
+			columnas = append(columnas, "M2 % contra kit", "M2 % contra fuertes")
 		}
 	}
 

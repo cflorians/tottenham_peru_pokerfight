@@ -235,6 +235,11 @@ type AptitudFinal struct {
 	// Rivales es de dónde salen los otros 5 finalistas: los tipos de bot que
 	// llegan a la final en las ligas simuladas, con su frecuencia como peso.
 	Rivales Campo
+	// Fuertes, si tiene tipos, es un segundo grupo de rivales: las finales se
+	// reparten por mitades entre los dos grupos y la aptitud es el PEOR de los
+	// dos porcentajes. Así el genético no puede ganar aptitud aplastando a un
+	// grupo y regalándose al otro: tiene que servir contra los dos.
+	Fuertes Campo
 	Topes   []int // Topes de manos; se alternan entre las finales.
 	Finales int   // Finales por evaluación.
 	// Coevolucion es cuántos de los 5 rivales se reemplazan por campeones de
@@ -243,14 +248,17 @@ type AptitudFinal struct {
 }
 
 // Evaluar implementa AptitudFunc. Aptitud es el porcentaje de finales ganadas
-// (M2); PorEscenario trae el porcentaje por tope, en el orden de Topes.
+// (M2); PorEscenario trae el porcentaje por tope, en el orden de Topes, y con
+// Fuertes, al final, el porcentaje contra cada grupo.
 func (a AptitudFinal) Evaluar(g estrategia.Genoma, campeones []estrategia.Genoma, bib Biblioteca, semilla uint64) Evaluacion {
 	ganadas := make([]float64, len(a.Topes))
 	jugadas := make([]float64, len(a.Topes))
-	var pesoTotal float64
-	for _, p := range a.Rivales.Pesos {
-		pesoTotal += p
+	grupos := []Campo{a.Rivales}
+	if len(a.Fuertes.Tipos) > 0 {
+		grupos = append(grupos, a.Fuertes)
 	}
+	ganadasGrupo := make([]float64, len(grupos))
+	jugadasGrupo := make([]float64, len(grupos))
 	politicas := make([]estrategia.Politica, 6)
 	politicas[0] = g
 
@@ -258,17 +266,25 @@ func (a AptitudFinal) Evaluar(g estrategia.Genoma, campeones []estrategia.Genoma
 	for k := 0; k < a.Finales; k++ {
 		s := mezclar(semilla, 0xF1, uint64(k))
 		azar := rand.New(rand.NewPCG(s, 0x52495641))
+		// Los topes rotan cada final y el grupo cada vuelta completa de topes:
+		// cada grupo juega con todos los topes.
+		g := (k / len(a.Topes)) % len(grupos)
+		grupo := grupos[g]
+		var pesoTotal float64
+		for _, p := range grupo.Pesos {
+			pesoTotal += p
+		}
 		for i := 1; i < 6; i++ {
 			tirada := azar.Float64() * pesoTotal
-			elegido := len(a.Rivales.Tipos) - 1
-			for t, p := range a.Rivales.Pesos {
+			elegido := len(grupo.Tipos) - 1
+			for t, p := range grupo.Pesos {
 				if tirada < p {
 					elegido = t
 					break
 				}
 				tirada -= p
 			}
-			politicas[i] = a.Rivales.Tipos[elegido].Politica
+			politicas[i] = grupo.Tipos[elegido].Politica
 		}
 		for j := 0; j < a.Coevolucion && j < len(campeones); j++ {
 			politicas[1+j] = campeones[len(campeones)-1-j]
@@ -276,8 +292,10 @@ func (a AptitudFinal) Evaluar(g estrategia.Genoma, campeones []estrategia.Genoma
 		t := k % len(a.Topes)
 		ganador, manos := JugarFinal(FinalDeLasBases(a.Topes[t]), politicas, bib, int(s%uint64(len(bib))), s)
 		jugadas[t]++
+		jugadasGrupo[g]++
 		if ganador == 0 {
 			ganadas[t]++
+			ganadasGrupo[g]++
 		}
 		ev.ManosJugadas += manos
 	}
@@ -288,6 +306,14 @@ func (a AptitudFinal) Evaluar(g estrategia.Genoma, campeones []estrategia.Genoma
 		total += ganadas[t]
 	}
 	ev.Aptitud = 100 * total / float64(a.Finales)
+	if len(grupos) > 1 {
+		ev.Aptitud = 100
+		for g := range grupos {
+			m2 := 100 * ganadasGrupo[g] / max(jugadasGrupo[g], 1)
+			ev.PorEscenario = append(ev.PorEscenario, m2)
+			ev.Aptitud = min(ev.Aptitud, m2)
+		}
+	}
 	return ev
 }
 
