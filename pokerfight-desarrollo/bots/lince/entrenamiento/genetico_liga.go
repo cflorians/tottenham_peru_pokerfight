@@ -240,8 +240,13 @@ type AptitudFinal struct {
 	// dos porcentajes. Así el genético no puede ganar aptitud aplastando a un
 	// grupo y regalándose al otro: tiene que servir contra los dos.
 	Fuertes Campo
-	Topes   []int // Topes de manos; se alternan entre las finales.
-	Finales int   // Finales por evaluación.
+	// PesoFuertes, entre 0 y 1, cambia la regla anterior: en vez del peor de
+	// los dos porcentajes, la aptitud es su promedio con este peso para el
+	// grupo Fuertes. Sirve para pedir "casi tan bueno como siempre contra los
+	// rivales comunes, y lo mejor posible contra los fuertes". 0 = el peor.
+	PesoFuertes float64
+	Topes       []int // Topes de manos; se alternan entre las finales.
+	Finales     int   // Finales por evaluación.
 	// Coevolucion es cuántos de los 5 rivales se reemplazan por campeones de
 	// generaciones anteriores.
 	Coevolucion int
@@ -312,6 +317,10 @@ func (a AptitudFinal) Evaluar(g estrategia.Genoma, campeones []estrategia.Genoma
 			m2 := 100 * ganadasGrupo[g] / max(jugadasGrupo[g], 1)
 			ev.PorEscenario = append(ev.PorEscenario, m2)
 			ev.Aptitud = min(ev.Aptitud, m2)
+		}
+		if a.PesoFuertes > 0 {
+			n := len(ev.PorEscenario)
+			ev.Aptitud = (1-a.PesoFuertes)*ev.PorEscenario[n-2] + a.PesoFuertes*ev.PorEscenario[n-1]
 		}
 	}
 	return ev

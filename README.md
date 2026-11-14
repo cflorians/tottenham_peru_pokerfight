@@ -12,8 +12,8 @@ resultados de las simulaciones.
 | Congelar el código | vie 20/11/2026 |
 | **Entrega** | **sáb 21/11/2026** |
 | Torneo | dom 22/11/2026 |
-| Versión actual del bot | **v1.1** (genoma entrenado con el premio del torneo; gana el 89 % de 80 finales reales contra los bots del kit) |
-| Próximo paso | Política nueva: jugar mejor contra bots que van all-in seguido (ver [`PLAN-BOT.md`](PLAN-BOT.md)) |
+| Versión actual del bot | **v1.2** (genoma entrenado con el premio del torneo; en la final se adapta a cada rival: gana 10 de 20 finales reales contra bots entrenados y el 82,5 % de 40 contra los del kit) |
+| Próximo paso | Ver rivales reales en el servidor de pruebas y jugar mejor contra bots que van all-in seguido (ver [`PLAN-BOT.md`](PLAN-BOT.md)) |
 
 ## La competencia en dos líneas
 

@@ -46,6 +46,13 @@ type manoSim struct {
 	apuestaActual int64
 	subidaMinima  int64
 	subidasCalle  int
+
+	// perfiles[i] es lo que se le vio hacer en esta mesa al jugador de la
+	// silla i (nil = nadie lleva la cuenta), y agresor es la silla que hizo la
+	// última apuesta o subida de la calle (-1 = nadie). De ahí sale
+	// Situacion.LecturaRival, igual que en el bot real.
+	perfiles []*estrategia.Perfil
+	agresor  int
 }
 
 // JugarMano juega una mano completa y devuelve el neto en fichas de cada
@@ -64,8 +71,15 @@ type manoSim struct {
 // las ciegas van a la izquierda del botón; la subida mínima es la última
 // subida completa; un all-in corto no reabre la acción a quien ya habló.
 func JugarMano(cfg ConfigMesa, rep *Reparto, politicas []estrategia.Politica, asientos []int, stacks []int64, boton int, semilla uint64) []int64 {
+	return jugarMano(cfg, rep, politicas, asientos, stacks, boton, semilla, nil)
+}
+
+// jugarMano es JugarMano con memoria: perfiles[i] acumula lo que hace el
+// jugador de la silla i, mano tras mano, y las políticas lo ven en
+// Situacion.LecturaRival. Con nil nadie recuerda nada.
+func jugarMano(cfg ConfigMesa, rep *Reparto, politicas []estrategia.Politica, asientos []int, stacks []int64, boton int, semilla uint64, perfiles []*estrategia.Perfil) []int64 {
 	n := len(politicas)
-	m := &manoSim{cfg: cfg, rep: rep, boton: boton, js: make([]*jugadorSim, n)}
+	m := &manoSim{cfg: cfg, rep: rep, boton: boton, js: make([]*jugadorSim, n), perfiles: perfiles, agresor: -1}
 	for i, p := range politicas {
 		stack := cfg.Stack
 		if stacks != nil {
@@ -103,6 +117,7 @@ func JugarMano(cfg ConfigMesa, rep *Reparto, politicas []estrategia.Politica, as
 		m.apuestaActual = 0
 		m.subidaMinima = cfg.CiegaGrande
 		m.subidasCalle = 0
+		m.agresor = -1
 		m.ronda((boton + 1) % n)
 	}
 
@@ -218,6 +233,10 @@ func (m *manoSim) turno(silla int, vista []int64, actuo []bool) {
 	actuo[silla] = true
 	if tipo == bet || tipo == raise || tipo == allin {
 		m.subidasCalle++
+		m.agresor = silla
+	}
+	if m.perfiles != nil {
+		m.perfiles[silla].Anotar(tipo == bet || tipo == raise || tipo == allin, tipo == call)
 	}
 }
 
@@ -236,7 +255,12 @@ func (m *manoSim) situacion(silla int, puedeSubir bool) estrategia.Situacion {
 			sillas = append(sillas, i)
 		}
 	}
+	var lectura float64
+	if m.perfiles != nil && m.agresor >= 0 && m.agresor != silla {
+		lectura = m.perfiles[m.agresor].Lectura()
+	}
 	return estrategia.Situacion{
+		LecturaRival:  lectura,
 		Calle:         m.calle,
 		Fuerza:        m.rep.Fuerza[j.asiento][m.calle],
 		Rivales:       len(sillas) - 1,

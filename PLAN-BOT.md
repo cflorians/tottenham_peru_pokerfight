@@ -9,7 +9,7 @@ Este archivo tiene lo común. La estrategia está en dos planes:
 
 ## Estado
 
-_Última actualización: sáb 14/11/2026 (v1.1 promovida; primera conexión al servidor de pruebas)._
+_Última actualización: sáb 14/11/2026 (v1.2 promovida: adaptación al rival en la final; hay 30 equipos inscritos)._
 
 - Hecho: análisis de las bases y de la guía, 90 mesas de prueba en el formato real
   (`Simulaciones/pruebas_formato_real.md`), prueba del genoma prudente (`Simulaciones/genoma_prudente.json`)
@@ -54,6 +54,13 @@ _Última actualización: sáb 14/11/2026 (v1.1 promovida; primera conexión al s
   mitad son genomas nuestros, gana la final solo el 5-13 %; y el genoma que les gana a esos pierde contra el
   kit. No hay un genoma mejor que todos, y un selector que elige sobre la marcha según lo que gana no
   funciona. **El bot no cambia** hasta ver rivales reales (`Simulaciones/a3_campo_fuerte.md`).
+- **v1.2 promovida (sáb 14/11, Carlos)**: el bot lee cuán seguido apuesta cada rival (dos genes nuevos de
+  adaptación) y juega la **mesa final con un genoma adaptativo**; la clasificatoria sigue con el de la v1.1.
+  Contra finalistas entrenados como nosotros gana 10 de 20 finales reales (la v1.1, 1 de 20); contra los del
+  kit, 82,5 % de 40 (v1.1: 92,5 %). Detalle en `Simulaciones/b4_adaptacion_rival.md`. Etiqueta git `v1.2`.
+- **Hay 30 equipos inscritos** (dato del sáb 14/11): pasan 6, el 20 %. Responde la pregunta 1.
+- **Servidor de pruebas**: no volvió a responder desde las 13:02 del sáb 14/11. El bot ya no queda
+  reintentando; hay que probar a mano de vez en cuando.
 - **Próximo paso**: la política nueva (A3). Lo que más duele hoy son los campos con bots que van all-in
   seguido (quiebra 12 % y 17 % en las rondas 1 y 2 del campo agresivo) y que, cuidando el stack, se termina
   1.º menos veces en el campo tight. Falta avisar a la organización de las caídas del
@@ -123,7 +130,7 @@ si no, se entrega la anterior.
 | **v2** | B | Genoma de la final y detección de la final. **Mecanismo hecho; el genoma aparte no supera al de la v1** | sáb 14 |
 | **v3** | A | Política nueva: rangos, tablas de valor, juego según el stack | lun 16 |
 | **v4** | B | Modo final completo: reloj, valor de la final, mesa corta | mar 17 |
-| **v5** | A + B | Modelado de rivales | mié 18 |
+| **v5** | A + B | Modelado de rivales. **Adelantado en parte: la v1.2 (sáb 14) lee la agresión de cada rival en la final** | mié 18 |
 
 **Prueba de promoción**: mismas semillas para las dos versiones (solo en el simulador rápido: la arena real
 no es reproducible); mejora de la métrica del plan (M1 y `U` en A,
@@ -258,7 +265,7 @@ Las líneas base de cada plan (A1 y B1) se corren apenas esté el simulador.
 
 | # | Pregunta | Afecta a |
 | - | --- | --- |
-| 1 | ¿Cuántos equipos hay inscritos? (Con 15 pasa el 40 %; con 40, el 15 %.) | A |
+| 1 | ¿Cuántos equipos hay inscritos? **Respondida: 30** (pasa el 20 %) | A |
 | 2 | Si quedan 6 o menos bots con fichas antes de la ronda 10, ¿ya están todos clasificados? ¿Cómo se ordena a los eliminados en una misma ronda? ¿Y un empate en fichas en el corte? | A |
 | 3 | ¿Cómo se arman las mesas cuando quedan pocos bots (7, 8, 9, o menos de 5)? | A |
 | 4 | ¿Cómo se decide "el primero de la clasificatoria" si el líder en fichas quiebra después, o si quedan menos de 6 vivos? | A |

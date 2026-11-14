@@ -44,6 +44,8 @@ const (
 	UmbralAllIn                  // Fuerza efectiva para ir all-in.
 	FarolSubida                  // Probabilidad de resubir de farol.
 	AversionRiesgo               // Fuerza extra que se exige al jugarse buena parte del stack.
+	AdaptaSubida                 // Cuánto baja el umbral de resubir contra un rival que apuesta seguido.
+	AdaptaPago                   // Cuánto se abarata pagarle a un rival que apuesta seguido.
 
 	CantidadGenes
 )
@@ -77,7 +79,13 @@ var Genes = [CantidadGenes]DefinicionGen{
 	UmbralAllIn:       {"umbral_allin", 0.75, 0.99, "fuerza efectiva para ir all-in"},
 	FarolSubida:       {"farol_subida", 0.00, 0.15, "probabilidad de resubir de farol"},
 	AversionRiesgo:    {"aversion_riesgo", 0.00, 0.50, "fuerza extra exigida por jugarse todo el stack (proporcional a lo que se arriesga)"},
+	AdaptaSubida:      {"adapta_subida", 0.00, 1.00, "cuánto baja el umbral de resubir por cada punto de agresión de más del rival que apostó (y sube si es pasivo)"},
+	AdaptaPago:        {"adapta_pago", 0.00, 2.00, "cuánto se abarata pagarle a un rival por cada punto de agresión de más (y se encarece si es pasivo)"},
 }
+
+// genesOpcionales son los genes que pueden faltar en un genoma.json viejo: con
+// 0 la política juega igual que antes de que existieran.
+var genesOpcionales = map[Gen]bool{AdaptaSubida: true, AdaptaPago: true}
 
 // Genoma es un individuo: un valor por gen.
 type Genoma [CantidadGenes]float64
@@ -157,11 +165,16 @@ func NuevoArchivo(g Genoma, generacion int, aptitud float64, semilla uint64) Arc
 }
 
 // Genoma reconstruye el genoma del archivo. Un gen que falta es un error: un
-// genoma a medias jugaría con ceros en sus umbrales sin avisar.
+// genoma a medias jugaría con ceros en sus umbrales sin avisar. La excepción
+// son los genes de adaptación al rival, que valen 0 en los archivos anteriores
+// a ellos.
 func (a Archivo) Genoma() (Genoma, error) {
 	var g Genoma
 	for i, def := range Genes {
 		v, ok := a.Genes[def.Nombre]
+		if !ok && genesOpcionales[Gen(i)] {
+			continue
+		}
 		if !ok {
 			return g, fmt.Errorf("estrategia: al genoma le falta el gen %q", def.Nombre)
 		}

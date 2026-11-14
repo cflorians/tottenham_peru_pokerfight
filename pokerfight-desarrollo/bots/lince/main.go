@@ -81,7 +81,8 @@ type lince struct {
 	final    estrategia.Genoma // Mesa final.
 	azar     *rand.Rand
 	contexto *torneo.Contexto
-	registro *registroManos // nil con -sin-archivos.
+	registro *registroManos  // nil con -sin-archivos.
+	rivales  *lecturaRivales // Siempre existe; con -sin-archivos no se guarda.
 
 	// Las cartas propias solo llegan en mano_inicio. Si la conexión (o el
 	// proceso) se corta a mitad de una mano, al volver la mesa pide jugar sin
@@ -106,7 +107,7 @@ func (b *lince) preparar() (cerrar func(), err error) {
 		salidaDetalle = io.Discard
 	}
 
-	rutaEstado := ""
+	rutaEstado, rutaRivales := "", ""
 	if !*sinArchivos {
 		if err := os.MkdirAll(*dirDatos, 0o755); err != nil {
 			return cerrar, fmt.Errorf("no se pudo crear la carpeta de datos %s: %w", *dirDatos, err)
@@ -122,7 +123,14 @@ func (b *lince) preparar() (cerrar func(), err error) {
 			return cerrar, fmt.Errorf("no se pudo abrir el registro de manos: %w", err)
 		}
 		b.registro = registro
-		cerrar = func() { archivo.Close(); registro.cerrar() }
+		rutaRivales = filepath.Join(*dirDatos, "rivales.json")
+		cerrar = func() {
+			if err := b.rivales.guardar(); err != nil {
+				b.eventos.Printf("ERROR al guardar los perfiles de los rivales: %v", err)
+			}
+			archivo.Close()
+			registro.cerrar()
+		}
 		salidaEventos = io.MultiWriter(os.Stderr, archivo)
 		salidaDetalle = io.MultiWriter(salidaDetalle, archivo)
 		rutaEstado = filepath.Join(*dirDatos, "estado.json")
@@ -131,6 +139,16 @@ func (b *lince) preparar() (cerrar func(), err error) {
 	}
 	b.eventos = log.New(salidaEventos, "", log.LstdFlags|log.Lmicroseconds)
 	b.detalle = log.New(salidaDetalle, "", log.LstdFlags|log.Lmicroseconds)
+
+	// Lo aprendido de los rivales sobrevive a un reinicio. Si el archivo no
+	// sirve se empieza de cero: no es motivo para no jugar.
+	b.rivales = nuevaLecturaRivales(rutaRivales)
+	if err := b.rivales.leer(); err != nil {
+		b.eventos.Printf("ERROR al leer los perfiles de los rivales: %v", err)
+		b.rivales = nuevaLecturaRivales(rutaRivales)
+	} else if n := b.rivales.cantidad(); n > 0 {
+		b.eventos.Printf("perfiles de %d rivales retomados de %s", n, rutaRivales)
+	}
 
 	datos := genomaIncluido
 	if *rutaGenoma != "" {
@@ -229,6 +247,9 @@ func accionSegura(t botsdk.Turno) botsdk.Accion {
 }
 
 func (b *lince) decidir(ctx context.Context, t botsdk.Turno) botsdk.Accion {
+	// Primero lo de los rivales: la acción del que acaba de apostar tiene que
+	// estar contada al leer su perfil, como en el simulador.
+	b.lecturaDeRivales().observar(t.Estado, t.IDJugador)
 	b.contexto.Identificar(t.IDJugador)
 	b.contexto.Observar(t.Estado)
 	b.registro.observar(t.Estado)
@@ -257,6 +278,7 @@ func (b *lince) decidir(ctx context.Context, t botsdk.Turno) botsdk.Accion {
 
 	fuerza := estrategia.FuerzaConPlazo(mano, t.Estado.Comunitarias, *muestras, limite, b.azar)
 	situacion := estrategia.SituacionDesde(t, fuerza)
+	situacion.LecturaRival = b.lecturaDeRivales().lectura(estrategia.UltimoAgresor(t))
 	// Dos modos, un solo bot: en la mesa final juega el genoma de la final.
 	genoma := b.genoma
 	if b.contexto.Fase() == torneo.Final {
@@ -265,11 +287,20 @@ func (b *lince) decidir(ctx context.Context, t botsdk.Turno) botsdk.Accion {
 	decision := genoma.Decidir(situacion, b.azar)
 	accion := estrategia.AAccion(decision, t)
 
-	b.detalle.Printf("[%-7s] %s %s | mesa %-14s | fuerza %3.0f%% (efectiva %3.0f%%) vs %d | %-10s | %s",
+	b.detalle.Printf("[%-7s] %s %s | mesa %-14s | fuerza %3.0f%% (efectiva %3.0f%%) vs %d | %-10s | %s%s",
 		t.Estado.Etapa, mano[0], mano[1], cartas(t.Estado.Comunitarias),
 		fuerza*100, genoma.FuerzaEfectiva(situacion)*100, situacion.Rivales,
-		describir(accion), decision.Motivo)
+		describir(accion), decision.Motivo, textoLectura(situacion.LecturaRival))
 	return accion
+}
+
+// lecturaDeRivales devuelve el seguidor de rivales, creándolo en memoria si
+// falta (un lince armado sin preparar, como en las pruebas): nunca es nil.
+func (b *lince) lecturaDeRivales() *lecturaRivales {
+	if b.rivales == nil {
+		b.rivales = nuevaLecturaRivales("")
+	}
+	return b.rivales
 }
 
 // cartasValidas dice si la mano trae dos cartas de verdad (el valor cero de
@@ -329,6 +360,7 @@ func (b *lince) protegido(que string, f func()) {
 // ManoInicio implementa botsdk.ObservaManos.
 func (b *lince) ManoInicio(estado botsdk.EstadoPublico, mano botsdk.Mano) {
 	b.protegido("ManoInicio", func() {
+		b.lecturaDeRivales().observar(estado, "")
 		b.registro.manoInicio(estado, mano)
 		b.guardarMano(estado.IDMano, mano)
 		nueva, motivo := b.contexto.ManoInicio(estado)
@@ -347,6 +379,9 @@ func (b *lince) ManoFin(resultado botsdk.ResultadoMano) {
 		if err := b.registro.manoFin(resultado, string(b.contexto.Fase()), b.contexto.Estado().IDJugador); err != nil {
 			b.eventos.Printf("ERROR al registrar la mano: %v", err)
 		}
+		if err := b.lecturaDeRivales().manoFin(); err != nil {
+			b.eventos.Printf("ERROR al guardar los perfiles de los rivales: %v", err)
+		}
 		if err := b.contexto.ManoFin(resultado); err != nil {
 			b.eventos.Printf("ERROR al guardar el estado: %v", err)
 		}
@@ -356,6 +391,13 @@ func (b *lince) ManoFin(resultado botsdk.ResultadoMano) {
 // EstadoActualizado implementa botsdk.ObservaEstado.
 func (b *lince) EstadoActualizado(estado botsdk.EstadoPublico) {
 	b.protegido("EstadoActualizado", func() {
+		// El id propio lo recuerda el seguidor desde el primer turno; antes de
+		// eso, se toma del contexto (capturado de la bienvenida) si lo hay.
+		yo := ""
+		if b.contexto != nil {
+			yo = b.contexto.Estado().IDJugador
+		}
+		b.lecturaDeRivales().observar(estado, yo)
 		b.contexto.Observar(estado)
 		b.registro.observar(estado)
 	})

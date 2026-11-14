@@ -5,7 +5,7 @@ Lo común (infraestructura, simulador, calendario, preguntas, riesgos) está en 
 
 ## Estado
 
-_Última actualización: vie 13/11/2026._ **B1 y B2 hechas** (`Simulaciones/a2_b2_v1.md`). El genoma de la v1.1 gana el **89 % de 80 finales reales** contra los bots del kit (v1: 81 % de 140; v0: 30 % de 60) y 78-88 % en el simulador con tope de 500 manos o sin tope. Un genoma entrenado solo para finales (`Simulaciones/genoma_final_b2.json`) no lo supera: la final se juega con el genoma de la v1. El bot ya cambia de genoma al detectar la final. En el servidor de pruebas se jugaron 3 manos por segundo: la final se decidiría por eliminación y el reloj (B3) pierde prioridad. **Riesgo abierto**: contra finalistas entrenados como nosotros la v1.1 gana solo el 5-13 % de las finales; hay dos genomas de cobertura (`e`: 30 % contra ellos y 79-83 % contra el kit; F2: 54 % y 8 %) y un selector adaptativo que se probó y no sirve (`Simulaciones/a3_campo_fuerte.md`). Decidir cuál usar necesita ver rivales reales. Tampoco hay fusión posible mezclando genes ni entrenando con objetivo equilibrado: lo que les gana a los entrenados es resubirles liviano después del flop, y eso pierde contra el kit. **Sigue B4, en concreto: que los umbrales de pagar y resubir dependan de cuán seguido apuesta cada rival**, antes que B3.
+_Última actualización: vie 13/11/2026._ **Juega la v1.2: la final tiene genoma propio y adaptativo** (`Simulaciones/b4_adaptacion_rival.md`): lee cuán seguido apuesta cada rival y le resube y paga más liviano al que apuesta casi siempre. En finales reales gana 10 de 20 contra bots entrenados como nosotros (la v1.1, 1 de 20) y 82,5 % de 40 contra los del kit (v1.1: 92,5 %). Lo que sigue aquí abajo es la historia anterior. **B1 y B2 hechas** (`Simulaciones/a2_b2_v1.md`). El genoma de la v1.1 gana el **89 % de 80 finales reales** contra los bots del kit (v1: 81 % de 140; v0: 30 % de 60) y 78-88 % en el simulador con tope de 500 manos o sin tope. Un genoma entrenado solo para finales (`Simulaciones/genoma_final_b2.json`) no lo supera: la final se juega con el genoma de la v1. El bot ya cambia de genoma al detectar la final. En el servidor de pruebas se jugaron 3 manos por segundo: la final se decidiría por eliminación y el reloj (B3) pierde prioridad. **Riesgo abierto**: contra finalistas entrenados como nosotros la v1.1 gana solo el 5-13 % de las finales; hay dos genomas de cobertura (`e`: 30 % contra ellos y 79-83 % contra el kit; F2: 54 % y 8 %) y un selector adaptativo que se probó y no sirve (`Simulaciones/a3_campo_fuerte.md`). Decidir cuál usar necesita ver rivales reales. Tampoco hay fusión posible mezclando genes ni entrenando con objetivo equilibrado: lo que les gana a los entrenados es resubirles liviano después del flop, y eso pierde contra el kit. **Sigue B4, en concreto: que los umbrales de pagar y resubir dependan de cuán seguido apuesta cada rival**, antes que B3.
 
 ## 1. Objetivo
 
@@ -98,9 +98,10 @@ Es barato: el entrenador ya existe, solo cambia el fitness.
 
 ### B4 · Modelado en la final (mié 18) · recortable
 
-- [ ] Cargar los perfiles de la clasificatoria al empezar la final.
-- [ ] Ajuste rápido por rival: cuánto se retira ante una subida (para robar), cuánto paga (para valor),
-      frecuencia de all-in (para pagarle).
+- [x] Cargar los perfiles de la clasificatoria al empezar la final: el bot guarda la agresión de cada alias
+      en `datos/rivales.json` durante todo el torneo y la usa en la final.
+- [x] Ajuste por rival según cuán seguido apuesta (genes `adapta_subida` y `adapta_pago`), v1.2.
+- [ ] Lo que falta del ajuste por rival: cuánto se retira ante una subida (para robar) y cuánto paga (para valor).
 - [ ] Rango del rival según su perfil en la equidad contra rangos (pieza del Plan A).
 
 ## 6. Metas

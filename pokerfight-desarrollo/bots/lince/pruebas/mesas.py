@@ -10,6 +10,10 @@ Desde pokerfight-desarrollo, con todo compilado en bin/:
     python bots/lince/pruebas/mesas.py -mesas 30 v0=bots/lince/genoma.json v1=bots/lince/genoma_clasificatoria.json
     python bots/lince/pruebas/mesas.py -final -mesas 50 v0=bots/lince/genoma.json final=bots/lince/genoma_final.json
 
+Con -final hay tres alineaciones: F1 y F2 (Lince contra bots del kit) y F3
+(Lince contra cuatro copias de nuestro bot con otros genomas de
+bots/lince/rivales/ -v1, v1.1, b2 y e- más el novato: rivales "fuertes").
+
 Cada variante es nombre=genoma.json. Todas juegan las mismas alineaciones y
 semillas, pero la arena real NO es reproducible (algún bot del kit usa azar sin
 sembrar): son muestras independientes, no comparaciones pareadas.
@@ -35,6 +39,19 @@ RIVALES = {
     "novato": {"id": "novato", "nombre": "Michi Novato", "comando": [sys.executable, "bots/novato/bot.py", "-silencioso"]},
 }
 
+
+def _rival_fuerte(clave, nombre, genoma):
+    """Rival 'fuerte': el mismo ejecutable de Lince con otro genoma (sin la palabra Lince en id ni nombre)."""
+    return {
+        "id": f"rival-{clave}",
+        "nombre": f"Rival {nombre}",
+        "comando": ["./bin/lince", "-silencioso", "-sin-archivos", "-una-partida", "-fase", "clasificatoria", "-genoma", f"bots/lince/rivales/{genoma}.json"],
+    }
+
+
+for _clave, _nombre, _genoma in [("v1", "v1", "v1"), ("v1_1", "v1.1", "v1_1"), ("b2", "b2", "final_b2"), ("e", "e", "e")]:
+    RIVALES[f"rival-{_clave}"] = _rival_fuerte(_clave, _nombre, _genoma)
+
 # Alineaciones de la clasificatoria (Lince más estos rivales): las mismas ideas
 # que Simulaciones/pruebas_formato_real.md.
 ALINEACIONES = {
@@ -46,6 +63,8 @@ ALINEACIONES = {
 FINALES = {
     "F1": ["novato", "espia", "estadistico", "darwin", "base"],
     "F2": ["novato", "espia", "estadistico", "darwin", "conservador"],
+    # Rivales fuertes: el mismo bot con otros genomas (bots/lince/rivales/).
+    "F3": ["rival-v1", "rival-v1_1", "rival-b2", "rival-e", "novato"],
 }
 
 

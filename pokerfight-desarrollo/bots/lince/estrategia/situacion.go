@@ -9,6 +9,9 @@ import (
 // SituacionDesde traduce el turno real de la mesa a la Situacion que mira la
 // política. Es el espejo de lo que hace el simulador del entrenamiento con sus
 // mesas falsas: si se agrega un campo aquí, hay que agregarlo allá.
+//
+// LecturaRival no se llena aquí: depende de lo que el bot recuerda de cada
+// rival (ver UltimoAgresor y Perfil).
 func SituacionDesde(t botsdk.Turno, fuerza float64) Situacion {
 	cg := float64(max(t.Estado.CiegaGrande, 1))
 
@@ -97,4 +100,26 @@ func AAccion(d Decision, t botsdk.Turno) botsdk.Accion {
 		}
 		return t.Fold()
 	}
+}
+
+// UltimoAgresor devuelve el id del rival que hizo la última apuesta o subida
+// de la calle en curso, o "" si nadie más apostó en ella. Es el mismo criterio
+// que usa el simulador para LecturaRival.
+func UltimoAgresor(t botsdk.Turno) string {
+	historial := t.Estado.HistorialAcciones
+	for i := len(historial) - 1; i >= 0; i-- {
+		a := historial[i]
+		if a.Etapa != t.Estado.Etapa {
+			break
+		}
+		if a.IDJugador != t.IDJugador && EsAgresiva(a.Accion.Tipo) {
+			return a.IDJugador
+		}
+	}
+	return ""
+}
+
+// EsAgresiva dice si la acción es una apuesta, una subida o un all-in.
+func EsAgresiva(tipo botsdk.TipoAccion) bool {
+	return tipo == botsdk.Bet || tipo == botsdk.Raise || tipo == botsdk.AllIn
 }

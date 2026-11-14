@@ -3,7 +3,7 @@
 Nombre de trabajo; se puede cambiar. Parte de **Gato Darwin** (`bots/darwin`, de AICS PUCP): política con
 números evolucionados por un algoritmo genético y fuerza de la mano por Monte Carlo.
 
-**Versión actual: v1.1.** La política es la de Darwin, pero el genoma se entrenó con lo que premia el torneo
+**Versión actual: v1.2.** La política es la de Darwin, pero el genoma se entrenó con lo que premia el torneo
 (llegar a la final y terminar 1.º en ligas simuladas de 10 rondas) en vez de las fichas por mano, y alrededor
 está la infraestructura para aguantar el campeonato entero. Resultados: `Simulaciones/a2_b2_v1.md`. El plan está en `../../../PLAN-BOT.md` y las
 reglas de trabajo en equipo (ramas, PR, archivos compartidos, token) en `../../../AGENTS.md`.
@@ -21,7 +21,9 @@ reglas de trabajo en equipo (ramas, PR, archivos compartidos, token) en `../../.
 | Cartas a salvo | Las cartas propias se guardan en `datos/mano.json`: si la conexión o el proceso se cortan a mitad de una mano, al volver la sigue jugando (la mesa no las repite) |
 
 El contexto de torneo decide **con qué genoma se juega**: `genoma.json` en la clasificatoria y
-`genoma_final.json` al detectar la mesa final (hoy son el mismo genoma: uno aparte para la final no dio mejor).
+`genoma_final.json` al detectar la mesa final. El de la final se **adapta a cada rival**: el bot cuenta cuán
+seguido apuesta cada alias (`rivales.go`, guardado en `datos/rivales.json`) y le resube y paga más liviano al
+que apuesta casi siempre (`Simulaciones/b4_adaptacion_rival.md`).
 
 ## Compilar y probar
 
@@ -71,7 +73,8 @@ go run ./bots/lince/cmd/entrenar-liga -rapido                # prueba de humo (n
 ```
 
 Con `-modo final -equilibrado`, la mitad de las finales son contra los genomas de `rivales/` y la aptitud es
-el peor de los dos resultados. Con `-con-final`, cada liga en que el genoma clasifica juega también su mesa final y la aptitud es el premio
+el peor de los dos resultados (o su promedio ponderado con `-peso-fuertes`; el genoma de final de la v1.2 se
+entrenó con `-peso-fuertes 0.25 -coevolucion 0`). Con `-con-final`, cada liga en que el genoma clasifica juega también su mesa final y la aptitud es el premio
 realmente cobrado. No pisa `genoma.json`: deja el campeón en un archivo aparte, elegido con torneos que el genético nunca vio.
 Tarda unos 10 minutos con los valores por defecto.
 
@@ -82,7 +85,7 @@ final con `-final`) y resume neto, quiebras y timeouts de Lince con cada genoma:
 
 ```bash
 python bots/lince/pruebas/mesas.py -mesas 40 v0=bots/lince/genoma.json v1=bots/lince/genoma_clasificatoria.json
-python bots/lince/pruebas/mesas.py -final -mesas 50 v0=bots/lince/genoma.json final=bots/lince/genoma_final.json
+python bots/lince/pruebas/mesas.py -final -mesas 20 clasif=bots/lince/genoma.json final=bots/lince/genoma_final.json
 ```
 
 ## Estudiar a los rivales
@@ -158,8 +161,9 @@ recompilar con otras opciones (`-trimpath`, `-ldflags=-s`) suele dar un binario 
 | `entrenamiento/genetico_liga.go`, `cmd/entrenar-liga/` | Entrenador con aptitud de liga o de mesa final |
 | `pruebas/mesas.py` | Mesas reales en condiciones de torneo para comparar genomas |
 | `registro.go`, `pruebas/rivales.py` | Registro de manos y perfil de cada rival |
+| `rivales.go`, `estrategia/lectura.go` | Lectura de cada rival (cuán seguido apuesta) que usa la política al decidir |
 | `genoma.json` | Genoma de la clasificatoria (v1.1). Lo incluye el binario |
-| `genoma_final.json` | Genoma de la mesa final (hoy, el mismo de la v1.1). Lo incluye el binario |
+| `genoma_final.json` | Genoma de la mesa final (v1.2, adaptativo al rival). Lo incluye el binario |
 | `genoma_clasificatoria.json` | Última salida de `entrenar-liga -modo clasificatoria` (candidato; no lo usa el bot) |
 | `rivales/*.json` | Genomas nuestros ya entrenados: son los rivales del campo "fuerte" del simulador |
 | `genoma_v0.json`, `genoma_darwin.json` | El prudente de la v0 y el original de Darwin: referencia y rivales del simulador |

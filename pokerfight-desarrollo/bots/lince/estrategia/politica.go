@@ -25,6 +25,12 @@ type Situacion struct {
 	SubidaMinima  float64 // Total mínimo para que una subida sea válida.
 	Techo         float64 // Total máximo (el all-in).
 	PuedeSubir    bool    // La mesa acepta bet o raise en este turno.
+
+	// LecturaRival es cuánto más agresivo que lo normal es el rival que hizo
+	// la última apuesta o subida de esta calle (Perfil.Lectura): positivo si
+	// apuesta muy seguido, negativo si casi nunca. 0 si nadie apostó en la
+	// calle o si no se sabe nada de él.
+	LecturaRival float64
 }
 
 // TipoDecision es la intención de la política, antes de traducirla a una
@@ -104,6 +110,12 @@ func (g Genoma) Decidir(s Situacion, azar *rand.Rand) Decision {
 	// Pot odds: la fracción del pozo final que ponemos al pagar. Si ganamos
 	// más seguido que eso, pagar da fichas a la larga.
 	potOdds := s.PorIgualar / (s.Pozo + s.PorIgualar)
+
+	// Adaptación al rival: la apuesta de quien apuesta casi siempre vale
+	// menos, así que alcanza con menos mano para resubirle y para pagarle. Y
+	// al revés con quien apuesta poco. Sin lectura (0) no cambia nada.
+	umbralSubida -= g[AdaptaSubida] * s.LecturaRival
+	margenPago *= max(1-g[AdaptaPago]*s.LecturaRival, 0.2)
 
 	if subida := g.tamSubida(s); f >= umbralSubida+g[AversionRiesgo]*s.Riesgo(subida) && s.PuedeSubir {
 		return Decision{Tipo: Subir, Total: subida, Motivo: "subo por valor"}

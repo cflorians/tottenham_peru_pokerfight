@@ -36,9 +36,17 @@ func JugarMesa(mesa ConfigMesa, politicas []estrategia.Politica, stacks []int64,
 		vivos    = make([]int, 0, n)
 		asientos = make([]int, 0, n)
 	)
+	// Lo que cada uno hace en esta mesa queda a la vista de todos: es la
+	// "memoria" de los bots que se adaptan al rival. Se pierde al cambiar de
+	// mesa, como si en cada ronda los rivales fueran desconocidos (el bot real
+	// además recuerda a los que ya vio: tiene algo más de información).
+	perfiles := make([]estrategia.Perfil, n)
+	enMesaPerfiles := make([]*estrategia.Perfil, 0, n)
+
 	boton, jugadas := 0, 0
 	for h := 0; h < manos; h++ {
 		enMesa, enMano, vivos, asientos = enMesa[:0], enMano[:0], vivos[:0], asientos[:0]
+		enMesaPerfiles = enMesaPerfiles[:0]
 		botonMano := -1
 		for i := 0; i < n; i++ {
 			if s := (boton + i) % n; stacks[s] > 0 {
@@ -57,12 +65,13 @@ func JugarMesa(mesa ConfigMesa, politicas []estrategia.Politica, stacks []int64,
 			enMesa = append(enMesa, politicas[s])
 			enMano = append(enMano, stacks[s])
 			asientos = append(asientos, len(asientos))
+			enMesaPerfiles = append(enMesaPerfiles, &perfiles[s])
 		}
 		if len(vivos) < 2 {
 			break
 		}
 
-		neto := JugarMano(mesa, &bib[(desde+h)%len(bib)], enMesa, asientos, enMano, botonMano, mezclar(semilla, uint64(h)))
+		neto := jugarMano(mesa, &bib[(desde+h)%len(bib)], enMesa, asientos, enMano, botonMano, mezclar(semilla, uint64(h)), enMesaPerfiles)
 		for i, s := range vivos {
 			stacks[s] += neto[i]
 			if stacks[s] <= 0 && alQuebrar != nil {

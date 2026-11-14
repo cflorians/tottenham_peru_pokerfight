@@ -15,6 +15,8 @@ Resultados de pruebas y simulaciones del equipo. Los planes citan estos archivos
 | [`a3_campo_fuerte.md`](a3_campo_fuerte.md) | Qué pasa si otros equipos entrenan como nosotros: la v1.1 gana la final el 5-13 % en un campo de bots entrenados. No hay un genoma mejor que todos. Diagnóstico de quiebras, genomas candidatos y el selector adaptativo, descartado. El bot no cambia |
 | [`genoma_final_f2.json`](genoma_final_f2.json) | Genoma de final entrenado contra finalistas fuertes: les gana el 54 %, pero solo el 8 % a los del kit. No se usa |
 | [`genoma_final_eq.json`](genoma_final_eq.json) | Genoma de final entrenado con objetivo equilibrado: parejo (59 % contra mixto, 63 % contra fuertes) pero mediocre. No se usa |
+| [`b4_adaptacion_rival.md`](b4_adaptacion_rival.md) | **Lince v1.2**: el bot lee cuán seguido apuesta cada rival y la final se juega con un genoma adaptativo. En 20 finales reales contra bots entrenados gana 10 (la v1.1, 1); contra el kit, 82,5 % de 40 (v1.1: 92,5 %) |
+| `genoma_final_ad*.json`, `genoma_clasificatoria_ad.json` | Genomas adaptativos de `b4`: el promovido (`ad25`) y los que no |
 
 ## Cómo agregar un resultado
 
