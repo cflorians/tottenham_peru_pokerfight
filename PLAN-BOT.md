@@ -9,7 +9,7 @@ Este archivo tiene lo común. La estrategia está en dos planes:
 
 ## Estado
 
-_Última actualización: sáb 14/11/2026 (v1.2 promovida: adaptación al rival en la final; hay 30 equipos inscritos)._
+_Última actualización: dom 15/11/2026 (análisis de cómo debería jugar el bot; el bot sigue en la v1.2)._
 
 - Hecho: análisis de las bases y de la guía, 90 mesas de prueba en el formato real
   (`Simulaciones/pruebas_formato_real.md`), prueba del genoma prudente (`Simulaciones/genoma_prudente.json`)
@@ -61,9 +61,16 @@ _Última actualización: sáb 14/11/2026 (v1.2 promovida: adaptación al rival e
 - **Hay 30 equipos inscritos** (dato del sáb 14/11): pasan 6, el 20 %. Responde la pregunta 1.
 - **Servidor de pruebas**: no volvió a responder desde las 13:02 del sáb 14/11. El bot ya no queda
   reintentando; hay que probar a mano de vez en cuando.
-- **Próximo paso**: la política nueva (A3). Lo que más duele hoy son los campos con bots que van all-in
-  seguido (quiebra 12 % y 17 % en las rondas 1 y 2 del campo agresivo) y que, cuidando el stack, se termina
-  1.º menos veces en el campo tight. Falta avisar a la organización de las caídas del
+- **Análisis de cómo debería jugar (dom 15/11, Carlos)**: `Simulaciones/analisis_como_jugar.md` junta el
+  formato, cómo juegan los mejores programas y profesionales (búsqueda en la web, con fuentes) y cómo juega
+  Lince medido en 1 610 manos reales: entra en el doble de manos que un profesional, apuesta siempre el
+  27 % del pozo y **nunca paga después del flop** (se retira el 76 %). Contra el kit eso gana; contra quien
+  apuesta seguido es la fuga. Se probaron dos recetas de manual (empujar o retirarse con stack corto y
+  apuesta de valor más grande con mano más fuerte), a mano y reentrenando: casi no aportan. Quedan como
+  genes opcionales, en 0. **El bot no cambia.** El servidor de pruebas seguía caído a las 14:59.
+- **Próximo paso**: ver rivales reales en el servidor de pruebas (decide si hay que cubrir también la
+  clasificatoria contra quien apuesta seguido), confirmar cuánto dura la final, y el ensayo general del jue 19.
+  De la política nueva (A3) ya se probó lo que parecía más barato y no rinde contra campos tipo kit. Falta avisar a la organización de las caídas del
   servidor, el correo con las preguntas y la prueba de silencio larga.
 - Nombre del bot: **Lince** es un nombre de trabajo; se puede cambiar (es renombrar la carpeta y los imports).
 - **Equipo de 2 personas** (una con Claude Code, la otra con Codex) sobre un repositorio privado de GitHub.

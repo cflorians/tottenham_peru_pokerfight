@@ -17,6 +17,8 @@ Resultados de pruebas y simulaciones del equipo. Los planes citan estos archivos
 | [`genoma_final_eq.json`](genoma_final_eq.json) | Genoma de final entrenado con objetivo equilibrado: parejo (59 % contra mixto, 63 % contra fuertes) pero mediocre. No se usa |
 | [`b4_adaptacion_rival.md`](b4_adaptacion_rival.md) | **Lince v1.2**: el bot lee cuán seguido apuesta cada rival y la final se juega con un genoma adaptativo. En 20 finales reales contra bots entrenados gana 10 (la v1.1, 1); contra el kit, 82,5 % de 40 (v1.1: 92,5 %) |
 | `genoma_final_ad*.json`, `genoma_clasificatoria_ad.json` | Genomas adaptativos de `b4`: el promovido (`ad25`) y los que no |
+| [`analisis_como_jugar.md`](analisis_como_jugar.md) | **Cómo debería jugar el bot**: qué pide el formato, cómo juegan los mejores programas y profesionales (con fuentes), y cómo juega Lince medido en 1 610 manos reales. Lince entra en el doble de manos que un profesional y nunca paga después del flop. Empujar con stack corto y escalar la apuesta de valor, probados: casi no aportan. El bot no cambia |
+| [`genoma_clasificatoria_g.json`](genoma_clasificatoria_g.json) | Clasificatoria reentrenada con los genes nuevos libres: llega algo más a la final y termina 1.º bastante menos. No se usa |
 
 ## Cómo agregar un resultado
 

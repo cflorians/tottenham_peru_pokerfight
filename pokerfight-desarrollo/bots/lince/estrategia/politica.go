@@ -87,6 +87,25 @@ func (g Genoma) Decidir(s Situacion, azar *rand.Rand) Decision {
 		umbralApuesta, umbralSubida, margenPago, farol = g[UmbralApuestaPost], g[UmbralSubidaPost], g[MargenPagoPost], g[FarolPost]
 	}
 
+	// Stack corto: con pocas ciegas no hay fichas para abrir, ver el flop y
+	// apostar después. Abrir chico y retirarse ante una resubida regala las
+	// fichas de a poco; lo que hacen los jugadores de torneo es empujar todo
+	// con las manos que lo valen y retirarse con el resto. Quien empuja gana
+	// las ciegas cuando nadie paga, y cuando le pagan todavía tiene sus cartas.
+	if s.Calle == 0 && g[CortoBB] > 0 && s.Techo <= g[CortoBB] {
+		umbral := g[UmbralEmpuje]
+		if s.ApuestaActual > 1 {
+			umbral += g[EmpujeVsSubida]
+		}
+		if f >= umbral {
+			return Decision{Tipo: TodoAdentro, Motivo: "stack corto: empujo"}
+		}
+		if s.PorIgualar <= 0 {
+			return Decision{Tipo: Pasar, Motivo: "stack corto: paso"}
+		}
+		return Decision{Tipo: Retirarse, Motivo: "stack corto: no alcanza para empujar"}
+	}
+
 	// Jugarse todo el stack exige más que jugarse una ciega: en un torneo con
 	// eliminación, perder el stack es perder el torneo, y una mano "buena"
 	// contra una al azar no lo es tanto contra quien acepta ir all-in.
@@ -95,7 +114,15 @@ func (g Genoma) Decidir(s Situacion, azar *rand.Rand) Decision {
 	}
 
 	if s.PorIgualar <= 0 {
-		total := g.tamApuesta(s, g[TamValor])
+		// Cuanto mejor la mano, más grande la apuesta: con la mano justa en el
+		// umbral se apuesta TamValor, y con la mejor posible, TamValor más
+		// EscalaValor. Una apuesta chica con una mano enorme deja fichas en la
+		// mesa contra los rivales que pagan.
+		fraccion := g[TamValor]
+		if g[EscalaValor] > 0 && umbralApuesta < 1 {
+			fraccion += g[EscalaValor] * min(max((f-umbralApuesta)/(1-umbralApuesta), 0), 1)
+		}
+		total := g.tamApuesta(s, fraccion)
 		if f >= umbralApuesta+g[AversionRiesgo]*s.Riesgo(total) && s.PuedeSubir {
 			return Decision{Tipo: Subir, Total: total, Motivo: "apuesta por valor"}
 		}

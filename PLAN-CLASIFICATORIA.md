@@ -114,7 +114,10 @@ De a una pieza: ampliar `Situacion` y el simulador, reentrenar, promover o desca
 - [ ] Equidad contra rangos (biblioteca con 4 rangos por asiento y calle).
 - [ ] Decisiones grandes con las tablas de valor.
 - [ ] Tamaño de apuesta con compromiso.
-- [ ] Juego según el stack.
+- [x] Juego según el stack: probado el dom 15/11 (empujar o retirarse con stack corto, genes `corto_bb`,
+      `umbral_empuje`, `empuje_vs_subida`). Solo ayuda 2-3 puntos contra bots que van all-in seguido y el
+      entrenamiento lo apaga: aquí las ciegas no suben y casi nunca se está corto. Queda en 0.
+- [x] Tamaño de apuesta según la fuerza (gen `escala_valor`): probado, casi no aporta. Queda en 0.
 - [ ] Posición estimada, con las señales de campo chico.
 
 ### A4 · Corte y 1.º de la liga (lun 16 - mar 17)

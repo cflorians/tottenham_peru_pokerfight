@@ -74,7 +74,7 @@ go run ./bots/lince/cmd/entrenar-liga -rapido                # prueba de humo (n
 
 Con `-modo final -equilibrado`, la mitad de las finales son contra los genomas de `rivales/` y la aptitud es
 el peor de los dos resultados (o su promedio ponderado con `-peso-fuertes`; el genoma de final de la v1.2 se
-entrenó con `-peso-fuertes 0.25 -coevolucion 0`). Con `-con-final`, cada liga en que el genoma clasifica juega también su mesa final y la aptitud es el premio
+entrenó con `-peso-fuertes 0.25 -coevolucion 0`). Con `-campos kit,mixto` se eligen los campos de la clasificatoria. Con `-con-final`, cada liga en que el genoma clasifica juega también su mesa final y la aptitud es el premio
 realmente cobrado. No pisa `genoma.json`: deja el campeón en un archivo aparte, elegido con torneos que el genético nunca vio.
 Tarda unos 10 minutos con los valores por defecto.
 

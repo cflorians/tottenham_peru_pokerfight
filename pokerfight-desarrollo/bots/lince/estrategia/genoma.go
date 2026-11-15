@@ -46,6 +46,10 @@ const (
 	AversionRiesgo               // Fuerza extra que se exige al jugarse buena parte del stack.
 	AdaptaSubida                 // Cuánto baja el umbral de resubir contra un rival que apuesta seguido.
 	AdaptaPago                   // Cuánto se abarata pagarle a un rival que apuesta seguido.
+	CortoBB                      // Stack (en ciegas grandes) por debajo del cual preflop es empujar o retirarse.
+	UmbralEmpuje                 // Fuerza efectiva para empujar con stack corto si nadie subió.
+	EmpujeVsSubida               // Fuerza efectiva extra para empujar con stack corto cuando ya hubo una subida.
+	EscalaValor                  // Cuánto crece la apuesta de valor con la fuerza de la mano.
 
 	CantidadGenes
 )
@@ -81,11 +85,15 @@ var Genes = [CantidadGenes]DefinicionGen{
 	AversionRiesgo:    {"aversion_riesgo", 0.00, 0.50, "fuerza extra exigida por jugarse todo el stack (proporcional a lo que se arriesga)"},
 	AdaptaSubida:      {"adapta_subida", 0.00, 1.00, "cuánto baja el umbral de resubir por cada punto de agresión de más del rival que apostó (y sube si es pasivo)"},
 	AdaptaPago:        {"adapta_pago", 0.00, 2.00, "cuánto se abarata pagarle a un rival por cada punto de agresión de más (y se encarece si es pasivo)"},
+	CortoBB:           {"corto_bb", 0.00, 25.00, "con este stack o menos (en ciegas grandes), preflop solo se empuja todo o se retira; 0 = nunca"},
+	UmbralEmpuje:      {"umbral_empuje", 0.15, 0.75, "fuerza efectiva mínima para empujar con stack corto cuando nadie subió"},
+	EmpujeVsSubida:    {"empuje_vs_subida", 0.00, 0.30, "fuerza efectiva extra que se pide para empujar con stack corto cuando ya hubo una subida"},
+	EscalaValor:       {"escala_valor", 0.00, 1.50, "fracción del pozo que se suma a la apuesta de valor con la mejor mano posible (con una mano justa en el umbral no se suma nada)"},
 }
 
 // genesOpcionales son los genes que pueden faltar en un genoma.json viejo: con
 // 0 la política juega igual que antes de que existieran.
-var genesOpcionales = map[Gen]bool{AdaptaSubida: true, AdaptaPago: true}
+var genesOpcionales = map[Gen]bool{AdaptaSubida: true, AdaptaPago: true, CortoBB: true, UmbralEmpuje: true, EmpujeVsSubida: true, EscalaValor: true}
 
 // Genoma es un individuo: un valor por gen.
 type Genoma [CantidadGenes]float64

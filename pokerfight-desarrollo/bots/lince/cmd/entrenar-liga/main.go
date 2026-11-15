@@ -39,6 +39,7 @@ func main() {
 		listaTopes   = flag.String("topes", "150,500,0", "topes de manos de la final; se alternan (modo final)")
 		equilibrado  = flag.Bool("equilibrado", false, "modo final: la mitad de las finales contra finalistas tipo kit y la otra mitad contra los genomas de la carpeta rivales; la aptitud es el peor de los dos resultados")
 		pesoFuertes  = flag.Float64("peso-fuertes", 0, "con -equilibrado: peso (0 a 1) de las finales contra genomas entrenados en la aptitud; 0 = la aptitud es el peor de los dos resultados")
+		listaCampos  = flag.String("campos", "", "modo clasificatoria: campos a usar, separados por coma (por defecto, todos)")
 		conFinal     = flag.Bool("con-final", false, "modo clasificatoria: cada liga en que clasifica juega también su mesa final (con -topes) y la aptitud es el premio realmente cobrado, en vez de suponer -m2")
 		m2           = flag.Float64("m2", 0.20, "probabilidad de ganar la final que se supone al valorar llegar a ella (modo clasificatoria)")
 		forma        = flag.Float64("forma", 3, "peso del puesto en la liga dentro de la aptitud de entrenamiento (modo clasificatoria)")
@@ -97,6 +98,18 @@ func main() {
 	switch *modo {
 	case "clasificatoria":
 		campos := entrenamiento.Campos(darwin, prudente, fuertes...)
+		if *listaCampos != "" {
+			var elegidos []entrenamiento.Campo
+			for _, c := range campos {
+				if strings.Contains(","+*listaCampos+",", ","+c.Nombre+",") {
+					elegidos = append(elegidos, c)
+				}
+			}
+			if len(elegidos) == 0 {
+				log.Fatalf("ningún campo coincide con %q", *listaCampos)
+			}
+			campos = elegidos
+		}
 		a := entrenamiento.AptitudLiga{
 			Liga: entrenamiento.LigaDeLasBases(), Campos: campos, Tamanos: enteros(*listaN),
 			Ligas: *torneos, M2: *m2, Forma: *forma, Coevolucion: *coevolucion,
