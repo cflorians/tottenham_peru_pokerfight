@@ -110,6 +110,17 @@ func Campos(darwin, prudente estrategia.Genoma, fuertes ...estrategia.Genoma) []
 			fuerte.Pesos = append(fuerte.Pesos, 4/float64(len(fuertes)))
 		}
 		campos = append(campos, fuerte)
+
+		// El campo mixto con unos pocos bots entrenados (uno de cada siete):
+		// lo que parece más probable entre 30 equipos. La mayoría juega como
+		// el kit y dos o tres apuestan chico y muy seguido.
+		mixto := campos[3]
+		realista := Campo{Nombre: "realista", Tipos: append([]TipoBot{}, mixto.Tipos...), Pesos: append([]float64{}, mixto.Pesos...)}
+		for i, g := range fuertes {
+			realista.Tipos = append(realista.Tipos, TipoBot{"entrenado-" + string(rune('a'+i)), g})
+			realista.Pesos = append(realista.Pesos, 2/float64(len(fuertes)))
+		}
+		campos = append(campos, realista)
 	}
 	return campos
 }

@@ -150,6 +150,11 @@ type AptitudLiga struct {
 	// real del torneo, y castiga a un genoma que clasifica bien pero pierde
 	// la final contra los rivales que llegan con él.
 	TopesFinal []int
+	// FinalHeroe, si no es nil, es el genoma con que el evaluado juega esa mesa
+	// final. El bot real usa un genoma en la clasificatoria y otro en la final:
+	// así se entrena el de la clasificatoria por el premio que cobra el bot
+	// entero, y no por lo bien que jugaría él mismo una final que no va a jugar.
+	FinalHeroe *estrategia.Genoma
 	// Forma suma hasta este valor según el puesto en la liga (todo al 1.º,
 	// nada al último). "Clasificó o no" es un dato de sí o no y con pocas
 	// ligas es puro ruido; el puesto dice además cuán cerca estuvo, y le da
@@ -180,6 +185,9 @@ func (a AptitudLiga) Evaluar(g estrategia.Genoma, campeones []estrategia.Genoma,
 			finalistas = append(finalistas, politicas[f])
 			if f == 0 {
 				yo = i
+				if a.FinalHeroe != nil {
+					finalistas[i] = *a.FinalHeroe
+				}
 			}
 		}
 		tope := a.TopesFinal[k%len(a.TopesFinal)]

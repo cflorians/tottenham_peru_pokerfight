@@ -40,6 +40,7 @@ func main() {
 		equilibrado  = flag.Bool("equilibrado", false, "modo final: la mitad de las finales contra finalistas tipo kit y la otra mitad contra los genomas de la carpeta rivales; la aptitud es el peor de los dos resultados")
 		pesoFuertes  = flag.Float64("peso-fuertes", 0, "con -equilibrado: peso (0 a 1) de las finales contra genomas entrenados en la aptitud; 0 = la aptitud es el peor de los dos resultados")
 		listaCampos  = flag.String("campos", "", "modo clasificatoria: campos a usar, separados por coma (por defecto, todos)")
+		rutaFinal    = flag.String("genoma-final", "", "con -con-final: genoma con que se juega la mesa final (por defecto, el mismo que se evalúa). Con el de la final del bot, la clasificatoria se entrena por el premio del bot entero")
 		conFinal     = flag.Bool("con-final", false, "modo clasificatoria: cada liga en que clasifica juega también su mesa final (con -topes) y la aptitud es el premio realmente cobrado, en vez de suponer -m2")
 		m2           = flag.Float64("m2", 0.20, "probabilidad de ganar la final que se supone al valorar llegar a ella (modo clasificatoria)")
 		forma        = flag.Float64("forma", 3, "peso del puesto en la liga dentro de la aptitud de entrenamiento (modo clasificatoria)")
@@ -116,6 +117,10 @@ func main() {
 		}
 		if *conFinal {
 			a.TopesFinal = enteros(*listaTopes)
+			if *rutaFinal != "" {
+				final := leerGenoma(*rutaFinal)
+				a.FinalHeroe = &final
+			}
 		}
 		v := a
 		v.Ligas, v.Forma, v.Coevolucion = *validacion, 0, 0

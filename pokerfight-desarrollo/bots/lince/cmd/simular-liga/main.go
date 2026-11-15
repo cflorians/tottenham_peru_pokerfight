@@ -138,7 +138,7 @@ func main() {
 	log.SetFlags(0)
 	var (
 		listaN      = flag.String("n", "20", "participantes por liga, separados por coma (por ejemplo 15,20,30,40)")
-		listaCampos = flag.String("campos", "kit,agresivo,tight,mixto,fuerte", "campos de rivales a simular (fuerte solo existe si hay genomas en la carpeta rivales)")
+		listaCampos = flag.String("campos", "kit,agresivo,tight,mixto,fuerte,realista", "campos de rivales a simular (fuerte y realista solo existen si hay genomas en la carpeta rivales)")
 		listaHeroes = flag.String("heroes", "v0,darwin,novato", "bots a medir: v0 (genoma_v0.json), actual (genoma.json), final (genoma_final.json), darwin, novato, o la ruta de un genoma .json")
 		ligas       = flag.Int("ligas", 2000, "ligas por héroe, campo y tamaño")
 		listaTopes  = flag.String("topes", "150,500,0", "topes de manos de la mesa final (0 = sin reloj)")

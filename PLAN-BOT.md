@@ -68,6 +68,10 @@ _Última actualización: dom 15/11/2026 (análisis de cómo debería jugar el bo
   apuesta seguido es la fuga. Se probaron dos recetas de manual (empujar o retirarse con stack corto y
   apuesta de valor más grande con mano más fuerte), a mano y reentrenando: casi no aportan. Quedan como
   genes opcionales, en 0. **El bot no cambia.** El servidor de pruebas seguía caído a las 14:59.
+- **Ensayo general hecho (dom 15/11)**: `bots/lince/cmd/liga-real` juega el torneo entero con los ejecutables de
+  verdad. En 15 ligas reales de 30 bots Lince llegó a la final 12 veces y fue campeón 10; contó bien las rondas
+  y detectó la final en las 15, sin timeouts (`Simulaciones/ensayo_liga_real.md`). Falta la prueba de silencio
+  larga y probar el tope de 6 minutos.
 - **Próximo paso**: ver rivales reales en el servidor de pruebas (decide si hay que cubrir también la
   clasificatoria contra quien apuesta seguido), confirmar cuánto dura la final, y el ensayo general del jue 19.
   De la política nueva (A3) ya se probó lo que parecía más barato y no rinde contra campos tipo kit. Falta avisar a la organización de las caídas del
