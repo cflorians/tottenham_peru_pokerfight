@@ -80,6 +80,17 @@ Tarda unos 10 minutos con los valores por defecto.
 
 ## Validar en la arena real
 
+Para probar una mesa local de cinco jugadores desde PowerShell, ejecuta estos comandos en
+`pokerfight-desarrollo`:
+
+```powershell
+go build -o bin/ ./cmd/... ./bots/...
+.\bin\arena.exe validar -config .\pruebas-lince\mesa5.json
+.\bin\arena.exe correr -config .\pruebas-lince\mesa5.json
+```
+
+El historial queda en `pruebas-lince/resultados/`. La arena local genera los tokens de los bots.
+
 `pruebas/mesas.py` juega muchas mesas con los bots de verdad del kit (una ronda de clasificatoria, o una mesa
 final con `-final`) y resume neto, quiebras y timeouts de Lince con cada genoma:
 
