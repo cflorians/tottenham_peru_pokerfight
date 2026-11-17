@@ -88,6 +88,24 @@ python bots/lince/pruebas/mesas.py -mesas 40 v0=bots/lince/genoma.json v1=bots/l
 python bots/lince/pruebas/mesas.py -final -mesas 20 clasif=bots/lince/genoma.json final=bots/lince/genoma_final.json
 ```
 
+## Ensayar el torneo entero con los bots de verdad
+
+`liga-real` juega una clasificatoria completa (10 rondas, mesas sorteadas en cada una, fichas arrastradas,
+eliminación, corte de los 6) y la mesa final con los ejecutables reales del kit y el servidor de mesa del
+kit. Lince corre como **un solo proceso durante toda la liga**, igual que en el torneo, y al terminar se
+comprueba que haya contado bien las rondas y detectado la final. Una liga de 30 bots tarda un minuto.
+
+```bash
+go build -o bin/ ./bots/lince/cmd/liga-real
+./bin/liga-real -n 30                 # una liga de 30 bots y su final
+./bin/liga-real -n 30 -ligas 15       # quince, con resumen: finales alcanzadas, ganadas, quiebras por ronda
+./bin/liga-real -n 10 -rondas 3 -manos 20   # prueba corta
+```
+
+Deja todo en `datos/liga-real/` (ignorado por git): el log y el estado de Lince, y un `liga.json` por liga.
+Límites: aquí la conexión se cierra entre rondas y Lince reconecta (en el torneo queda abierta y en
+silencio), y los rivales son los bots del kit. Resultados: `Simulaciones/ensayo_liga_real.md`.
+
 ## Estudiar a los rivales
 
 Cuando el bot juega con archivos (sin `-sin-archivos`) graba cada mano. `pruebas/rivales.py` las resume por
@@ -160,6 +178,7 @@ recompilar con otras opciones (`-trimpath`, `-ldflags=-s`) suele dar un binario 
 | `cmd/simular-liga/` | Mide M1, M1b y M2 de un bot en miles de torneos simulados |
 | `entrenamiento/genetico_liga.go`, `cmd/entrenar-liga/` | Entrenador con aptitud de liga o de mesa final |
 | `pruebas/mesas.py` | Mesas reales en condiciones de torneo para comparar genomas |
+| `cmd/liga-real/` | Torneo entero (clasificatoria y final) con los ejecutables de verdad: ensayo general |
 | `registro.go`, `pruebas/rivales.py` | Registro de manos y perfil de cada rival |
 | `rivales.go`, `estrategia/lectura.go` | Lectura de cada rival (cuán seguido apuesta) que usa la política al decidir |
 | `genoma.json` | Genoma de la clasificatoria (v1.1). Lo incluye el binario |

@@ -19,6 +19,8 @@ Resultados de pruebas y simulaciones del equipo. Los planes citan estos archivos
 | `genoma_final_ad*.json`, `genoma_clasificatoria_ad.json` | Genomas adaptativos de `b4`: el promovido (`ad25`) y los que no |
 | [`analisis_como_jugar.md`](analisis_como_jugar.md) | **Cómo debería jugar el bot**: qué pide el formato, cómo juegan los mejores programas y profesionales (con fuentes), y cómo juega Lince medido en 1 610 manos reales. Lince entra en el doble de manos que un profesional y nunca paga después del flop. Empujar con stack corto y escalar la apuesta de valor, probados: casi no aportan. El bot no cambia |
 | [`genoma_clasificatoria_g.json`](genoma_clasificatoria_g.json) | Clasificatoria reentrenada con los genes nuevos libres: llega algo más a la final y termina 1.º bastante menos. No se usa |
+| [`ensayo_liga_real.md`](ensayo_liga_real.md) | **Ensayo general**: 15 torneos reales completos de 30 bots con `liga-real`. Lince llega a la final 12 veces y es campeón 10; cuenta de rondas y detección de la final correctas en las 15. El simulador coincide también con fichas arrastradas. Incluye la clasificatoria reentrenada con campo realista, que no mejora |
+| [`genoma_clasificatoria_r.json`](genoma_clasificatoria_r.json) | Clasificatoria entrenada por el premio del bot entero y con campo realista. No supera a la v1.1; no se usa |
 
 ## Cómo agregar un resultado
 

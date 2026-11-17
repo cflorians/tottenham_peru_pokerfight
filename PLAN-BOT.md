@@ -249,21 +249,24 @@ La arena del kit no juega 10 rondas con fichas arrastradas. Herramienta propia e
 
 **Nivel real** (para validar), con los `.exe` y la mesa de verdad:
 
-- [ ] Orquestador propio que usa `internal/mesa` desde nuestra carpeta (mismo módulo, no hace falta editar el
-      kit): `ConfigPartida.StackPorJugador` ya permite sentar a cada bot con sus fichas. El límite de
-      6 minutos no existe en la mesa local: lo pone el orquestador.
+- [x] Orquestador propio que usa `internal/mesa` desde nuestra carpeta (`bots/lince/cmd/liga-real`): sienta a
+      cada bot con sus fichas y pone el límite de 6 minutos.
 - [x] La final se prueba con el formato `mesa-unica` de la arena (`pruebas/mesas.py -final`).
 - [x] **Prueba de paridad de una ronda** (`simular-liga -paridad` contra las mesas reales): neto y quiebra
       por bot coinciden en orden y magnitud (`Simulaciones/a2_b2_v1.md`, sección 5).
-- [ ] Paridad con fichas arrastradas: 10 rondas en la arena real (necesita el orquestador).
+- [x] Paridad con fichas arrastradas: en 15 ligas reales de 30 bots Lince llega a la final el 80 % (el
+      simulador, 86 %) y gana el 83 % de las finales que juega (87 %). Coincide dentro del margen.
 
 Las líneas base de cada plan (A1 y B1) se corren apenas esté el simulador.
 
 ### Fase 5 · Ensayo general y congelamiento (jue 19 - vie 20)
 
-- [ ] **Ensayo general**: una liga completa de 10 rondas **más la final** en la arena real, con el supervisor,
-      un corte de red a mano y el proceso matado a mitad de una ronda y a mitad de la final. Revisar que el
-      cambio de modo ocurra en el momento justo y el log entero.
+- [x] **Ensayo general**: liga completa de 10 rondas **más la final** con los ejecutables de verdad
+      (`bots/lince/cmd/liga-real`). 15 ligas de 30 bots el dom 15/11: cuenta de rondas y cambio de modo
+      correctos en las 15, sin timeouts ni errores en el log (`Simulaciones/ensayo_liga_real.md`).
+- [ ] Lo que el ensayo no cubrió: el supervisor (`correr.ps1`) dentro de una liga, un corte de red a mano y
+      el proceso matado a mitad de una ronda de liga (matarlo a mitad de una mesa y de la final sí está en
+      `robustez.py`), y el tope de 6 minutos por mesa.
 - [ ] Resistencia: horas en silencio, mesas de 2 a 6, stacks de 500 a 60 000, rivales lentos (cerca de 5 s).
 - [ ] **Servidor de pruebas** (cualquier día, apenas encienda; hoy figura como no disponible): probar el token,
       medir la latencia y el ritmo real, y **registrar cómo juegan los rivales de verdad** para recalibrar los
