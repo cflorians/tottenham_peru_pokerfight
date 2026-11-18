@@ -166,14 +166,31 @@ func (c *Contexto) Retomar() bool {
 	if guardado.Alias == nil {
 		guardado.Alias = map[string]Alias{}
 	}
+	// Los estados anteriores podían guardar una fase deducida distinta de la
+	// fase con que se jugó. La ronda en curso anotaba la fase efectiva.
+	var ultimaRonda *Ronda
+	if n := len(guardado.Rondas); n > 0 && guardado.Rondas[n-1].Numero == guardado.Ronda {
+		ultimaRonda = &guardado.Rondas[n-1]
+		if ultimaRonda.Fase != "" {
+			guardado.Fase = ultimaRonda.Fase
+		}
+	}
 	c.estado = guardado
+	c.estado.Fase = c.Fase()
+	if guardado.Fase != Final || c.estado.Fase != Final {
+		c.estado.InicioFinal = time.Time{}
+	}
+	if ultimaRonda != nil {
+		ultimaRonda.Fase = c.estado.Fase
+	}
 	c.avisar("estado: retomado de %s (jugador %s, %s, ronda %d, mano %d de la ronda, %d fichas)",
-		ruta, guardado.IDJugador, c.Fase(), guardado.Ronda, guardado.ManosRonda, guardado.Stack)
+		ruta, guardado.IDJugador, c.estado.Fase, guardado.Ronda, guardado.ManosRonda, guardado.Stack)
 	return true
 }
 
 func (c *Contexto) reiniciar(id string) {
-	c.estado = Estado{Version: versionEstado, IDJugador: id, Fase: Clasificatoria, Alias: map[string]Alias{}}
+	c.estado = Estado{Version: versionEstado, IDJugador: id, Alias: map[string]Alias{}}
+	c.estado.Fase = c.Fase()
 	c.saldos = map[string]int64{}
 }
 
@@ -356,19 +373,19 @@ func (c *Contexto) abrirRonda(e botsdk.EstadoPublico, mesa, motivo string) strin
 	// y todos con las fichas iniciales. En la ronda 2 o posterior de la
 	// clasificatoria eso no puede pasar por casualidad: nadie termina una mesa
 	// de 50 manos con exactamente las fichas con las que empezó, y menos seis.
-	if s.Fase != Final && s.Ronda >= 1 && conFichas == c.cfg.JugadoresFinal && todosConStackInicial {
+	if c.cfg.FaseForzada == "" && s.Fase != Final && s.Ronda >= 1 && conFichas == c.cfg.JugadoresFinal && todosConStackInicial {
 		s.Fase = Final
-		s.InicioFinal = ahora
 		motivo += fmt.Sprintf("; %d jugadores con %d fichas cada uno: es la FINAL", conFichas, c.cfg.StackInicial)
 	}
-	if c.Fase() == Final && s.InicioFinal.IsZero() {
-		s.InicioFinal = ahora // Final forzada por configuración: el reloj corre desde aquí.
+	if s.Fase == Final && s.InicioFinal.IsZero() {
+		s.InicioFinal = ahora
 	}
 
 	// En la clasificatoria las fichas se arrastran: lo que tenemos al empezar
-	// esta mesa es exactamente con lo que terminamos la anterior. En el paso a
-	// la final no: ahí todos vuelven a las fichas iniciales.
-	if n := len(s.Rondas); n > 0 && faseAnterior == Clasificatoria && s.Fase == Clasificatoria && miStack > 0 {
+	// esta mesa es exactamente con lo que terminamos la anterior. En el
+	// servidor de pruebas, la clasificatoria forzada admite reinicios de fichas.
+	fichasArrastradas := c.cfg.FaseForzada != Clasificatoria || !todosConStackInicial
+	if n := len(s.Rondas); n > 0 && faseAnterior == Clasificatoria && s.Fase == Clasificatoria && fichasArrastradas && miStack > 0 {
 		s.Rondas[n-1].StackFin = miStack
 	}
 
@@ -378,7 +395,7 @@ func (c *Contexto) abrirRonda(e botsdk.EstadoPublico, mesa, motivo string) strin
 	s.Mesa = mesa
 	s.Rondas = append(s.Rondas, Ronda{
 		Numero:      s.Ronda,
-		Fase:        c.Fase(),
+		Fase:        s.Fase,
 		Inicio:      ahora,
 		Jugadores:   conFichas,
 		StackInicio: miStack,

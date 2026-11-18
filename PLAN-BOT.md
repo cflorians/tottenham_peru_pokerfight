@@ -9,7 +9,7 @@ Este archivo tiene lo común. La estrategia está en dos planes:
 
 ## Estado
 
-_Última actualización: dom 15/11/2026 (análisis de cómo debería jugar el bot; el bot sigue en la v1.2)._
+_Última actualización: mar 17/11/2026 (corrección del registro de la fase forzada)._
 
 - Hecho: análisis de las bases y de la guía, 90 mesas de prueba en el formato real
   (`Simulaciones/pruebas_formato_real.md`), prueba del genoma prudente (`Simulaciones/genoma_prudente.json`)
@@ -72,6 +72,11 @@ _Última actualización: dom 15/11/2026 (análisis de cómo debería jugar el bo
   verdad. En 15 ligas reales de 30 bots Lince llegó a la final 12 veces y fue campeón 10; contó bien las rondas
   y detectó la final en las 15, sin timeouts (`Simulaciones/ensayo_liga_real.md`). Falta la prueba de silencio
   larga y probar el tope de 6 minutos.
+- **Registro de la fase forzada (mar 17/11, Hans con Codex).** En la práctica del lun 16/11 se registraron
+  123 manos en tres rondas. El reinicio de fichas en la segunda ronda hacía guardar `final` con
+  `-Fase clasificatoria`. Ahora la fase elegida queda en el log y en disco. Al retomar un estado anterior
+  se recupera la fase efectiva de la última ronda. Si se reinician las fichas en la práctica, se conserva
+  el saldo de cierre de la ronda anterior.
 - **Próximo paso**: ver rivales reales en el servidor de pruebas (decide si hay que cubrir también la
   clasificatoria contra quien apuesta seguido), confirmar cuánto dura la final, y el ensayo general del jue 19.
   De la política nueva (A3) ya se probó lo que parecía más barato y no rinde contra campos tipo kit. Falta avisar a la organización de las caídas del
@@ -268,9 +273,13 @@ Las líneas base de cada plan (A1 y B1) se corren apenas esté el simulador.
       el proceso matado a mitad de una ronda de liga (matarlo a mitad de una mesa y de la final sí está en
       `robustez.py`), y el tope de 6 minutos por mesa.
 - [ ] Resistencia: horas en silencio, mesas de 2 a 6, stacks de 500 a 60 000, rivales lentos (cerca de 5 s).
-- [ ] **Servidor de pruebas** (cualquier día, apenas encienda; hoy figura como no disponible): probar el token,
-      medir la latencia y el ritmo real, y **registrar cómo juegan los rivales de verdad** para recalibrar los
-      campos de prueba de los dos planes.
+- [x] Verificar la fase forzada en mesas de práctica con fichas reiniciadas y al retomar el estado guardado.
+      Dos mesas locales de seis, de 50 manos cada una, quedaron como clasificatoria en disco y en el log.
+      `robustez.py` pasó 21 de 21 comprobaciones, incluida la detección automática de la final y la recuperación
+      tras un reinicio con la misma hora de inicio. La arena registró cero timeouts de Lince en tres mesas de
+      cinco (`pruebas/mesas.py`, alineación A, semillas 101 a 103).
+- [ ] **Servidor de pruebas**. El token funcionó en la sesión del lun 16/11. Falta medir el ritmo y
+      **registrar cómo juegan más rivales** para recalibrar los campos de prueba de los dos planes.
 - [ ] `git pull` diario del kit, recompilar y releer `docs/competencia.md`.
 - [ ] README de una página (idea, técnicas, resultados; aclarar que parte de Gato Darwin).
 - [ ] **Congelar el código el viernes 20.** El sábado solo se corrigen errores y se entrega.
