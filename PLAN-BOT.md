@@ -9,7 +9,7 @@ Este archivo tiene lo común. La estrategia está en dos planes:
 
 ## Estado
 
-_Última actualización: mar 17/11/2026 (corrección del registro de la fase forzada)._
+_Última actualización: mié 18/11/2026 (prueba de reinicio durante la clasificatoria)._
 
 - Hecho: análisis de las bases y de la guía, 90 mesas de prueba en el formato real
   (`Simulaciones/pruebas_formato_real.md`), prueba del genoma prudente (`Simulaciones/genoma_prudente.json`)
@@ -77,6 +77,9 @@ _Última actualización: mar 17/11/2026 (corrección del registro de la fase for
   `-Fase clasificatoria`. Ahora la fase elegida queda en el log y en disco. Al retomar un estado anterior
   se recupera la fase efectiva de la última ronda. Si se reinician las fichas en la práctica, se conserva
   el saldo de cierre de la ronda anterior.
+- **Reinicio durante la clasificatoria (mié 18/11, Hans con Codex).** `robustez.py` cerró el proceso a partir
+  de la mano 10 de la segunda ronda. El supervisor relanzó a Lince en la misma silla y el bot recuperó el estado
+  de la mano 11 con la ronda, la fase y su hora de inicio. La mesa aceptó un pago de Lince en la mano 19.
 - **Próximo paso**: ver rivales reales en el servidor de pruebas (decide si hay que cubrir también la
   clasificatoria contra quien apuesta seguido), confirmar cuánto dura la final, y el ensayo general del jue 19.
   De la política nueva (A3) ya se probó lo que parecía más barato y no rinde contra campos tipo kit. Falta avisar a la organización de las caídas del
@@ -213,7 +216,7 @@ Somos 2: A y B avanzan **en paralelo** desde el viernes 13. Cada persona es due�
       bloqueo cambia con cada compilación (ver "Lo aprendido" abajo).
 - [x] v0 = todo lo anterior con `genoma_prudente.json`. Etiquetada.
 - [x] Prueba automática de robustez (`bots/lince/pruebas/robustez.py`): silencio, reconexión entre mesas,
-      conteo de rondas, detección de la final y proceso matado a mitad de la final.
+      conteo de rondas, detección de la final y recuperación tras reiniciar el proceso en ambas fases.
 - [ ] Prueba de silencio de varias horas: `python bots/lince/pruebas/robustez.py -silencio 14400` (se probó
       con 40 s y con 10 minutos).
 - [ ] Mandar por correo las preguntas de la sección 6.
@@ -269,9 +272,10 @@ Las líneas base de cada plan (A1 y B1) se corren apenas esté el simulador.
 - [x] **Ensayo general**: liga completa de 10 rondas **más la final** con los ejecutables de verdad
       (`bots/lince/cmd/liga-real`). 15 ligas de 30 bots el dom 15/11: cuenta de rondas y cambio de modo
       correctos en las 15, sin timeouts ni errores en el log (`Simulaciones/ensayo_liga_real.md`).
-- [ ] Lo que el ensayo no cubrió: el supervisor (`correr.ps1`) dentro de una liga, un corte de red a mano y
-      el proceso matado a mitad de una ronda de liga (matarlo a mitad de una mesa y de la final sí está en
-      `robustez.py`), y el tope de 6 minutos por mesa.
+- [x] Reinicio de Lince durante una ronda clasificatoria de 50 manos en una mesa local de cinco jugadores.
+      `python -B bots/lince/pruebas/robustez.py` pasó las 38 comprobaciones, incluido el reinicio en la final.
+- [ ] Quedan el supervisor (`correr.ps1`) dentro de una liga completa con fichas arrastradas, un corte de red
+      a mano y el tope de 6 minutos por mesa.
 - [ ] Resistencia: horas en silencio, mesas de 2 a 6, stacks de 500 a 60 000, rivales lentos (cerca de 5 s).
 - [x] Verificar la fase forzada en mesas de práctica con fichas reiniciadas y al retomar el estado guardado.
       Dos mesas locales de seis, de 50 manos cada una, quedaron como clasificatoria en disco y en el log.
