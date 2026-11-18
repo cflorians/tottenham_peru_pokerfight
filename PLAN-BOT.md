@@ -9,7 +9,7 @@ Este archivo tiene lo común. La estrategia está en dos planes:
 
 ## Estado
 
-_Última actualización: mié 18/11/2026 (prueba de reinicio durante la clasificatoria)._
+_Última actualización: mié 18/11/2026 (ensayo local de cierre por reloj)._
 
 - Hecho: análisis de las bases y de la guía, 90 mesas de prueba en el formato real
   (`Simulaciones/pruebas_formato_real.md`), prueba del genoma prudente (`Simulaciones/genoma_prudente.json`)
@@ -70,8 +70,8 @@ _Última actualización: mié 18/11/2026 (prueba de reinicio durante la clasific
   genes opcionales, en 0. **El bot no cambia.** El servidor de pruebas seguía caído a las 14:59.
 - **Ensayo general hecho (dom 15/11)**: `bots/lince/cmd/liga-real` juega el torneo entero con los ejecutables de
   verdad. En 15 ligas reales de 30 bots Lince llegó a la final 12 veces y fue campeón 10; contó bien las rondas
-  y detectó la final en las 15, sin timeouts (`Simulaciones/ensayo_liga_real.md`). Falta la prueba de silencio
-  larga y probar el tope de 6 minutos.
+  y detectó la final en las 15, sin timeouts (`Simulaciones/ensayo_liga_real.md`). Todas las mesas terminaron
+  antes de alcanzar el tope de seis minutos.
 - **Registro de la fase forzada (mar 17/11, Hans con Codex).** En la práctica del lun 16/11 se registraron
   123 manos en tres rondas. El reinicio de fichas en la segunda ronda hacía guardar `final` con
   `-Fase clasificatoria`. Ahora la fase elegida queda en el log y en disco. Al retomar un estado anterior
@@ -80,6 +80,10 @@ _Última actualización: mié 18/11/2026 (prueba de reinicio durante la clasific
 - **Reinicio durante la clasificatoria (mié 18/11, Hans con Codex).** `robustez.py` cerró el proceso a partir
   de la mano 10 de la segunda ronda. El supervisor relanzó a Lince en la misma silla y el bot recuperó el estado
   de la mano 11 con la ronda, la fase y su hora de inicio. La mesa aceptó un pago de Lince en la mano 19.
+- **Cierre por reloj (mié 18/11, Hans con Codex).** Con un reloj local de cinco segundos, seis mesas cerraron
+  al terminar la mano en curso y los cuatro saldos de Lince entre rondas coincidieron. En una liga, el estado
+  de la última mano quedó en el archivo temporal al terminar el proceso. Detalles en
+  [`Simulaciones/ensayo_cierre_por_reloj.md`](Simulaciones/ensayo_cierre_por_reloj.md).
 - **Próximo paso**: ver rivales reales en el servidor de pruebas (decide si hay que cubrir también la
   clasificatoria contra quien apuesta seguido), confirmar cuánto dura la final, y el ensayo general del jue 19.
   De la política nueva (A3) ya se probó lo que parecía más barato y no rinde contra campos tipo kit. Falta avisar a la organización de las caídas del
@@ -274,6 +278,9 @@ Las líneas base de cada plan (A1 y B1) se corren apenas esté el simulador.
       correctos en las 15, sin timeouts ni errores en el log (`Simulaciones/ensayo_liga_real.md`).
 - [x] Reinicio de Lince durante una ronda clasificatoria de 50 manos en una mesa local de cinco jugadores.
       `python -B bots/lince/pruebas/robustez.py` pasó las 38 comprobaciones, incluido el reinicio en la final.
+- [x] Forzar el cierre por reloj con límite reducido y verificar la conservación y el arrastre de fichas.
+      Dos ligas locales de tres rondas ([informe](Simulaciones/ensayo_cierre_por_reloj.md)).
+- [ ] Verificar que `liga-real` espere a que se confirme el estado de la última mano antes de detener a Lince.
 - [ ] Quedan el supervisor (`correr.ps1`) dentro de una liga completa con fichas arrastradas, un corte de red
       a mano y el tope de 6 minutos por mesa.
 - [ ] Resistencia: horas en silencio, mesas de 2 a 6, stacks de 500 a 60 000, rivales lentos (cerca de 5 s).
