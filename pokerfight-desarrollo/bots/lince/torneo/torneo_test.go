@@ -217,13 +217,66 @@ func TestMesaDeCincoConStackInicialNoEsFinal(t *testing.T) {
 func TestFaseForzada(t *testing.T) {
 	cfg := ConfigCompetencia()
 	cfg.FaseForzada = Clasificatoria
+	ruta := filepath.Join(t.TempDir(), "estado.json")
 	r := nuevoReloj()
-	c := conReloj(Nuevo(cfg, ""), r)
+	c := conReloj(Nuevo(cfg, ruta), r)
 	c.Identificar(yo)
-	jugarMesa(t, c, r, "r1-m1", rivales("a", 5, 10000), 50)
+	primera := rivales("a", 5, 10000)
+	id := "r1-m1-mano-1"
+	c.ManoInicio(mesa(id, primera))
+	primera[yo] = 12000
+	c.Observar(mesa(id, primera))
+	if err := c.ManoFin(botsdk.ResultadoMano{IDMano: id}); err != nil {
+		t.Fatal(err)
+	}
 	jugarMesa(t, c, r, "r2-m1", rivales("b", 5, 10000), 50)
-	if c.Fase() != Clasificatoria {
-		t.Fatal("la fase forzada no se respetó")
+	if e := c.Estado(); c.Fase() != Clasificatoria || e.Fase != Clasificatoria || !e.InicioFinal.IsZero() {
+		t.Fatalf("fase efectiva %s, fase guardada %s, inicio de final %v", c.Fase(), e.Fase, e.InicioFinal)
+	}
+	e := c.Estado()
+	if segunda := e.Rondas[1]; segunda.Fase != Clasificatoria || strings.Contains(segunda.Motivo, "es la FINAL") {
+		t.Fatalf("la segunda ronda se registró como final: %+v", segunda)
+	}
+	if cierre := e.Rondas[0].StackFin; cierre != 12000 {
+		t.Fatalf("el reinicio de fichas pisó el saldo de cierre: %d, se esperaba 12000", cierre)
+	}
+	if fase := reabrir(ruta, r).Fase(); fase != Clasificatoria {
+		t.Fatalf("al retomar en modo automático quedó en fase %s", fase)
+	}
+}
+
+func TestRetomaUnaClasificatoriaGuardadaComoFinal(t *testing.T) {
+	ruta := filepath.Join(t.TempDir(), "estado.json")
+	r := nuevoReloj()
+	c := conReloj(Nuevo(ConfigCompetencia(), ruta), r)
+	c.estado.Ronda = 2
+	c.estado.Rondas = []Ronda{{Numero: 1, Fase: Clasificatoria}, {Numero: 2, Fase: Clasificatoria}}
+	c.estado.Fase = Final
+	c.estado.InicioFinal = r.ahora()
+	if err := c.Guardar(); err != nil {
+		t.Fatal(err)
+	}
+
+	retomado := reabrir(ruta, r)
+	if e := retomado.Estado(); e.Ronda != 2 || e.Fase != Clasificatoria || !e.InicioFinal.IsZero() {
+		t.Fatalf("retomó ronda %d, fase %s e inicio de final %v", e.Ronda, e.Fase, e.InicioFinal)
+	}
+}
+
+func TestFinalForzadaGuardaLaFaseYLaHora(t *testing.T) {
+	cfg := ConfigCompetencia()
+	cfg.FaseForzada = Final
+	ruta := filepath.Join(t.TempDir(), "estado.json")
+	r := nuevoReloj()
+	c := conReloj(Nuevo(cfg, ruta), r)
+	c.Identificar(yo)
+	inicio := r.ahora()
+	jugarMesa(t, c, r, "final", rivales("a", 5, 10000), 1)
+	if fase := c.Estado().Fase; fase != Final {
+		t.Fatalf("fase guardada %s, se esperaba final", fase)
+	}
+	if e := reabrir(ruta, r).Estado(); e.Fase != Final || !e.InicioFinal.Equal(inicio) {
+		t.Fatalf("retomó fase %s e inicio de final %v, se esperaba %v", e.Fase, e.InicioFinal, inicio)
 	}
 }
 

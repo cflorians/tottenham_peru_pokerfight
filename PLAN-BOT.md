@@ -72,6 +72,14 @@ _Última actualización: mié 18/11/2026 (ensayo local de cierre por reloj)._
   verdad. En 15 ligas reales de 30 bots Lince llegó a la final 12 veces y fue campeón 10; contó bien las rondas
   y detectó la final en las 15, sin timeouts (`Simulaciones/ensayo_liga_real.md`). Todas las mesas terminaron
   antes de alcanzar el tope de seis minutos.
+- **Registro de la fase forzada (mar 17/11, Hans con Codex).** En la práctica del lun 16/11 se registraron
+  123 manos en tres rondas. El reinicio de fichas en la segunda ronda hacía guardar `final` con
+  `-Fase clasificatoria`. Ahora la fase elegida queda en el log y en disco. Al retomar un estado anterior
+  se recupera la fase efectiva de la última ronda. Si se reinician las fichas en la práctica, se conserva
+  el saldo de cierre de la ronda anterior.
+- **Reinicio durante la clasificatoria (mié 18/11, Hans con Codex).** `robustez.py` cerró el proceso a partir
+  de la mano 10 de la segunda ronda. El supervisor relanzó a Lince en la misma silla y el bot recuperó el estado
+  de la mano 11 con la ronda, la fase y su hora de inicio. La mesa aceptó un pago de Lince en la mano 19.
 - **Cierre por reloj (mié 18/11, Hans con Codex).** Con un reloj local de cinco segundos, seis mesas cerraron
   al terminar la mano en curso y los cuatro saldos de Lince entre rondas coincidieron. En una liga, el estado
   de la última mano quedó en el archivo temporal al terminar el proceso. Detalles en
@@ -212,7 +220,7 @@ Somos 2: A y B avanzan **en paralelo** desde el viernes 13. Cada persona es due�
       bloqueo cambia con cada compilación (ver "Lo aprendido" abajo).
 - [x] v0 = todo lo anterior con `genoma_prudente.json`. Etiquetada.
 - [x] Prueba automática de robustez (`bots/lince/pruebas/robustez.py`): silencio, reconexión entre mesas,
-      conteo de rondas, detección de la final y proceso matado a mitad de la final.
+      conteo de rondas, detección de la final y recuperación tras reiniciar el proceso en ambas fases.
 - [ ] Prueba de silencio de varias horas: `python bots/lince/pruebas/robustez.py -silencio 14400` (se probó
       con 40 s y con 10 minutos).
 - [ ] Mandar por correo las preguntas de la sección 6.
@@ -268,16 +276,21 @@ Las líneas base de cada plan (A1 y B1) se corren apenas esté el simulador.
 - [x] **Ensayo general**: liga completa de 10 rondas **más la final** con los ejecutables de verdad
       (`bots/lince/cmd/liga-real`). 15 ligas de 30 bots el dom 15/11: cuenta de rondas y cambio de modo
       correctos en las 15, sin timeouts ni errores en el log (`Simulaciones/ensayo_liga_real.md`).
+- [x] Reinicio de Lince durante una ronda clasificatoria de 50 manos en una mesa local de cinco jugadores.
+      `python -B bots/lince/pruebas/robustez.py` pasó las 38 comprobaciones, incluido el reinicio en la final.
 - [x] Forzar el cierre por reloj con límite reducido y verificar la conservación y el arrastre de fichas.
       Dos ligas locales de tres rondas ([informe](Simulaciones/ensayo_cierre_por_reloj.md)).
 - [ ] Verificar que `liga-real` espere a que se confirme el estado de la última mano antes de detener a Lince.
-- [ ] Lo que el ensayo no cubrió: el supervisor (`correr.ps1`) dentro de una liga, un corte de red a mano y
-      el proceso matado a mitad de una ronda de liga (matarlo a mitad de una mesa y de la final sí está en
-      `robustez.py`), y el tope de 6 minutos por mesa.
+- [ ] Quedan el supervisor (`correr.ps1`) dentro de una liga completa con fichas arrastradas, un corte de red
+      a mano y el tope de 6 minutos por mesa.
 - [ ] Resistencia: horas en silencio, mesas de 2 a 6, stacks de 500 a 60 000, rivales lentos (cerca de 5 s).
-- [ ] **Servidor de pruebas** (cualquier día, apenas encienda; hoy figura como no disponible): probar el token,
-      medir la latencia y el ritmo real, y **registrar cómo juegan los rivales de verdad** para recalibrar los
-      campos de prueba de los dos planes.
+- [x] Verificar la fase forzada en mesas de práctica con fichas reiniciadas y al retomar el estado guardado.
+      Dos mesas locales de seis, de 50 manos cada una, quedaron como clasificatoria en disco y en el log.
+      `robustez.py` pasó 21 de 21 comprobaciones, incluida la detección automática de la final y la recuperación
+      tras un reinicio con la misma hora de inicio. La arena registró cero timeouts de Lince en tres mesas de
+      cinco (`pruebas/mesas.py`, alineación A, semillas 101 a 103).
+- [ ] **Servidor de pruebas**. El token funcionó en la sesión del lun 16/11. Falta medir el ritmo y
+      **registrar cómo juegan más rivales** para recalibrar los campos de prueba de los dos planes.
 - [ ] `git pull` diario del kit, recompilar y releer `docs/competencia.md`.
 - [ ] README de una página (idea, técnicas, resultados; aclarar que parte de Gato Darwin).
 - [ ] **Congelar el código el viernes 20.** El sábado solo se corrigen errores y se entrega.
