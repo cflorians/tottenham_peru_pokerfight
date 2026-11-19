@@ -9,7 +9,7 @@ Este archivo tiene lo común. La estrategia está en dos planes:
 
 ## Estado
 
-_Última actualización: mié 18/11/2026 (ensayo local de cierre por reloj)._
+_Última actualización: mié 18/11/2026 (README y ejecutable candidato de entrega)._
 
 - Hecho: análisis de las bases y de la guía, 90 mesas de prueba en el formato real
   (`Simulaciones/pruebas_formato_real.md`), prueba del genoma prudente (`Simulaciones/genoma_prudente.json`)
@@ -84,6 +84,10 @@ _Última actualización: mié 18/11/2026 (ensayo local de cierre por reloj)._
   al terminar la mano en curso y los cuatro saldos de Lince entre rondas coincidieron. En una liga, el estado
   de la última mano quedó en el archivo temporal al terminar el proceso. Detalles en
   [`Simulaciones/ensayo_cierre_por_reloj.md`](Simulaciones/ensayo_cierre_por_reloj.md).
+- **Preparación de la entrega (mié 18/11, Hans con Codex).** El README del jurado describe el bot, sus resultados
+  locales y los créditos. La compilación candidata de `master` (`6a5ac83`, Go 1.26.10, Windows x64) quedó en
+  `pokerfight-desarrollo/bin/entrega/6a5ac83/lince.exe`. Su SHA-256 es
+  `9bb6bb0b552bdab7336b799b9ee4d874142a523ef6bdaa718a0b5b008d6d8bf2`.
 - **Próximo paso**: ver rivales reales en el servidor de pruebas (decide si hay que cubrir también la
   clasificatoria contra quien apuesta seguido), confirmar cuánto dura la final, y el ensayo general del jue 19.
   De la política nueva (A3) ya se probó lo que parecía más barato y no rinde contra campos tipo kit. Falta avisar a la organización de las caídas del
@@ -292,7 +296,11 @@ Las líneas base de cada plan (A1 y B1) se corren apenas esté el simulador.
 - [ ] **Servidor de pruebas**. El token funcionó en la sesión del lun 16/11. Falta medir el ritmo y
       **registrar cómo juegan más rivales** para recalibrar los campos de prueba de los dos planes.
 - [ ] `git pull` diario del kit, recompilar y releer `docs/competencia.md`.
-- [ ] README de una página (idea, técnicas, resultados; aclarar que parte de Gato Darwin).
+- [x] [README breve para el jurado](pokerfight-desarrollo/bots/lince/README-ENTREGA.md), con atribución a
+      Gato Darwin y créditos a Claude Code y Codex.
+- [x] Probar el ejecutable candidato en Windows. La compilación, `go vet` y las pruebas de Go pasaron. El binario
+      arrancó desde la carpeta de entrega y pasó las 38 comprobaciones de `robustez.py` con 40 s de silencio.
+      En tres mesas de la arena (semillas 101 a 103) Lince tuvo cero timeouts.
 - [ ] **Congelar el código el viernes 20.** El sábado solo se corrigen errores y se entrega.
 
 ## 6. Preguntas para la organización (por correo ya; el resto, el domingo 15)

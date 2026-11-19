@@ -1,5 +1,7 @@
 # Lince · nuestro bot para PokerFight
 
+[README breve de entrega para el jurado](README-ENTREGA.md)
+
 Nombre de trabajo; se puede cambiar. Parte de **Gato Darwin** (`bots/darwin`, de AICS PUCP): política con
 números evolucionados por un algoritmo genético y fuerza de la mano por Monte Carlo.
 
