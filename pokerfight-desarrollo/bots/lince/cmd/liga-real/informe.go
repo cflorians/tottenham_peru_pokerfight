@@ -76,6 +76,9 @@ func imprimirLiga(w io.Writer, cfg configLiga, inf *informeLiga) {
 	}
 	if ch.Coincide {
 		fmt.Fprintln(w, "- Coincide: rondas, fases, fichas al empezar cada ronda y jugadores por mesa.")
+		if ch.UltimaManoEsperada != "" {
+			fmt.Fprintf(w, "- Última mano guardada: %s.\n", ch.UltimaManoGuardada)
+		}
 	} else {
 		for _, d := range ch.Diferencias {
 			fmt.Fprintf(w, "- NO coincide: %s\n", d)

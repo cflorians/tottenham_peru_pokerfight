@@ -12,6 +12,7 @@ Resultados de pruebas y simulaciones del equipo. Los planes citan estos archivos
 | [`a2_b2_v1.md`](a2_b2_v1.md) | **Lince v1 y v1.1**: genoma entrenado con el premio del torneo. Pruebas de promoción en el simulador, cientos de mesas y finales reales por versión (la v1.1 gana el 89 % de 80 finales), réplicas de Espía y Estadístico y paridad del simulador |
 | [`genoma_final_b2.json`](genoma_final_b2.json) | Genoma entrenado solo para ganar finales (B2). No supera al de la v1 en la final: no se usa |
 | [`servidor_pruebas.md`](servidor_pruebas.md) | Primera conexión al servidor de pruebas: token válido, forma de los `id_mano`, 3 manos por segundo, servidor inestable |
+| [`servidor_pruebas_20261120.md`](servidor_pruebas_20261120.md) | El candidato de entrega jugó 179 manos en cuatro mesas en el servidor de práctica, en fase clasificatoria |
 | [`a3_campo_fuerte.md`](a3_campo_fuerte.md) | Qué pasa si otros equipos entrenan como nosotros: la v1.1 gana la final el 5-13 % en un campo de bots entrenados. No hay un genoma mejor que todos. Diagnóstico de quiebras, genomas candidatos y el selector adaptativo, descartado. El bot no cambia |
 | [`genoma_final_f2.json`](genoma_final_f2.json) | Genoma de final entrenado contra finalistas fuertes: les gana el 54 %, pero solo el 8 % a los del kit. No se usa |
 | [`genoma_final_eq.json`](genoma_final_eq.json) | Genoma de final entrenado con objetivo equilibrado: parejo (59 % contra mixto, 63 % contra fuertes) pero mediocre. No se usa |
@@ -21,6 +22,10 @@ Resultados de pruebas y simulaciones del equipo. Los planes citan estos archivos
 | [`genoma_clasificatoria_g.json`](genoma_clasificatoria_g.json) | Clasificatoria reentrenada con los genes nuevos libres: llega algo más a la final y termina 1.º bastante menos. No se usa |
 | [`ensayo_liga_real.md`](ensayo_liga_real.md) | **Ensayo general**: 15 torneos reales completos de 30 bots con `liga-real`. Lince llega a la final 12 veces y es campeón 10; cuenta de rondas y detección de la final correctas en las 15. El simulador coincide también con fichas arrastradas. Incluye la clasificatoria reentrenada con campo realista, que no mejora |
 | [`ensayo_cierre_por_reloj.md`](ensayo_cierre_por_reloj.md) | Dos ligas locales con reloj de 5 s. Seis mesas cerradas por tiempo, fichas conservadas y cuatro cambios de ronda de Lince con el saldo correcto. Un estado de cierre quedó en el archivo temporal al detener el bot |
+| [`ensayo_reloj_seis_minutos.md`](ensayo_reloj_seis_minutos.md) | Reloj de seis minutos activado en una mesa local. Se liquidó la mano y coincidieron los cinco saldos de arrastre |
+| [`ensayo_corte_conexion_liga.md`](ensayo_corte_conexion_liga.md) | Liga local de 30 bots con corte de conexión en la primera ronda. Lince volvió a su silla y terminó la liga. La última mano quedó pendiente en el estado al apagar el ensayo |
+| [`ensayo_guardado_ultima_mano.md`](ensayo_guardado_ultima_mano.md) | Cuatro ligas locales con el orquestador ajustado. En las cuatro coincidió la última mano liquidada de Lince con la del estado final en disco |
+| [`diagnostico_pago_corto.md`](diagnostico_pago_corto.md) | 8 000 ligas para medir en qué turnos cambiaría el cálculo del pago corto. Los cambios potenciales se concentraron en el campo agresivo |
 | [`genoma_clasificatoria_r.json`](genoma_clasificatoria_r.json) | Clasificatoria entrenada por el premio del bot entero y con campo realista. No supera a la v1.1; no se usa |
 
 ## Cómo agregar un resultado

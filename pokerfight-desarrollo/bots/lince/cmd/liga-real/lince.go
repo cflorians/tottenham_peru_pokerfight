@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -83,6 +84,52 @@ func (p *procesoLince) Detener() {
 	})
 }
 
+// esperarGuardado da tiempo a que Lince cierre la última mano liquidada.
+// El servidor ya envió mano_fin, pero Lince todavía puede estar escribiendo
+// el temporal que luego se publica como estado.json.
+func (p *procesoLince) esperarGuardado(ctx context.Context, dirDatos, mano string) bool {
+	if mano == "" {
+		return false
+	}
+	ctx, cancelar := context.WithTimeout(ctx, 2*time.Second)
+	defer cancelar()
+	tic := time.NewTicker(25 * time.Millisecond)
+	defer tic.Stop()
+	for {
+		if estadoConfirmaMano(dirDatos, mano) {
+			return true
+		}
+		select {
+		case <-ctx.Done():
+			return false
+		case <-p.terminado:
+			return false
+		case <-tic.C:
+		}
+	}
+}
+
+func estadoConfirmaMano(dirDatos, mano string) bool {
+	estado, err := leerEstadoLince(dirDatos)
+	return err == nil && estado.IDJugador == idLince && manoGuardada(estado) == mano
+}
+
+func leerEstadoLince(dirDatos string) (torneo.Estado, error) {
+	var estado torneo.Estado
+	datos, err := os.ReadFile(filepath.Join(dirDatos, "estado.json"))
+	if err == nil {
+		err = json.Unmarshal(datos, &estado)
+	}
+	return estado, err
+}
+
+func manoGuardada(e torneo.Estado) string {
+	if e.UltimaManoFin.IsZero() {
+		return ""
+	}
+	return e.UltimaMano
+}
+
 // --- Chequeo del ensayo -------------------------------------------------------
 
 // chequeoLince compara lo que Lince cree que jugó (su estado.json) con lo que
@@ -101,6 +148,9 @@ type chequeoLince struct {
 	Errores         int      `json:"errores"`
 	EjemplosLog     []string `json:"ejemplos_log,omitempty"`
 	ProcesoMurioSol bool     `json:"proceso_murio_solo,omitempty"`
+
+	UltimaManoEsperada string `json:"ultima_mano_esperada,omitempty"`
+	UltimaManoGuardada string `json:"ultima_mano_guardada,omitempty"`
 }
 
 // mesaDeLince es una mesa que jugó Lince, para el chequeo.
@@ -108,25 +158,33 @@ type mesaDeLince struct {
 	Final       bool
 	Jugadores   int
 	FichasLince int64
+	UltimaMano  string
+}
+
+func ultimaManoEsperada(jugadas []mesaDeLince) string {
+	if len(jugadas) == 0 {
+		return ""
+	}
+	return jugadas[len(jugadas)-1].UltimaMano
 }
 
 // chequear lee el estado y el log de la carpeta de datos de Lince.
 func chequear(dirDatos string, jugadas []mesaDeLince) chequeoLince {
-	ch := chequeoLince{RondaEsperada: len(jugadas), FaseEsperada: string(torneo.Clasificatoria)}
+	ch := chequeoLince{
+		RondaEsperada: len(jugadas), FaseEsperada: string(torneo.Clasificatoria),
+		UltimaManoEsperada: ultimaManoEsperada(jugadas),
+	}
 	if n := len(jugadas); n > 0 && jugadas[n-1].Final {
 		ch.FaseEsperada = string(torneo.Final)
 	}
 
-	datos, err := os.ReadFile(filepath.Join(dirDatos, "estado.json"))
-	var e torneo.Estado
-	if err == nil {
-		err = json.Unmarshal(datos, &e)
-	}
+	e, err := leerEstadoLince(dirDatos)
 	if err != nil {
 		ch.Diferencias = append(ch.Diferencias, "no se pudo leer estado.json: "+err.Error())
 	} else {
 		ch.EstadoLeido = true
 		ch.IDJugador, ch.Ronda, ch.Fase = e.IDJugador, e.Ronda, string(e.Fase)
+		ch.UltimaManoGuardada = manoGuardada(e)
 		if ch.Fase == "" {
 			ch.Fase = string(torneo.Clasificatoria)
 		}
@@ -161,6 +219,10 @@ func chequear(dirDatos string, jugadas []mesaDeLince) chequeoLince {
 				ch.Diferencias = append(ch.Diferencias, fmt.Sprintf("ronda %d: anotó %d jugadores con fichas (eran %d)", i+1, r.Jugadores, j.Jugadores))
 			}
 		}
+	}
+	if ch.UltimaManoEsperada != "" && ch.UltimaManoGuardada != ch.UltimaManoEsperada {
+		ch.Diferencias = append(ch.Diferencias, fmt.Sprintf("última mano guardada %q (esperada %q)",
+			ch.UltimaManoGuardada, ch.UltimaManoEsperada))
 	}
 
 	logs, _ := filepath.Glob(filepath.Join(dirDatos, "lince-*.log"))
