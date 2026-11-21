@@ -6,6 +6,10 @@
   `powershell -ExecutionPolicy Bypass -File bots\lince\correr.ps1 -Addr 32.201.29.142:9000 -Fase clasificatoria -Nuevo -Silencioso`
 - **Muestra**: una sola mesa, 30 manos. Es muy poco: sirve para ver el formato, no para medir el juego.
 
+> **Dirección nueva (21/11)**: la organización movió el servidor de pruebas a `34.230.114.164:9000`
+> (`ec2-34-230-114-164.compute-1.amazonaws.com`). El comando de arriba usa la dirección vieja, la de esta
+> prueba del 14/11.
+
 Cómo conectarse (y cómo guardar el token) está en `AGENTS.md`, sección "Token y servidor de la organización".
 
 ## Qué se vio

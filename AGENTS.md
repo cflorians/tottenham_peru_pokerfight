@@ -138,21 +138,24 @@ en bash). No pasar el token con `-token` ni escribirlo en ningún archivo.
 
 #### Conectar al servidor de pruebas
 
-- **Dirección**: `32.201.29.142:9000` (la de la guía; puede cambiar: revisarla antes). Responde **a ratos**: el
-  vie 13/11 no contestaba; el sáb 14/11 a las 12:57 sí, Lince jugó 30 manos y a los 15 s el servidor cerró
-  la conexión y dejó de responder otra vez. Si no conecta, el bot reintenta solo.
-- Comprobar si responde, sin token: `Test-NetConnection 32.201.29.142 -Port 9000` (PowerShell) o
-  `nc -vz 32.201.29.142 9000`.
+- **Dirección** (actualizada por la organización el sáb 21/11): `34.230.114.164:9000`, con nombre
+  `ec2-34-230-114-164.compute-1.amazonaws.com` (en el aviso venía escrito `amazonws.com`, que no resuelve; el
+  bueno es `amazonaws.com`). Usar la IP: no depende del DNS. El sáb 21/11 el puerto respondía. Puede volver a
+  cambiar: revisarla antes de conectar. Si no conecta, el bot reintenta solo.
+- Dirección anterior, ya en desuso: `32.201.29.142:9000` (la de la guía). Respondía a ratos: el vie 13/11 no
+  contestaba; el sáb 14/11 Lince jugó 30 manos y a los 15 s el servidor cerró la conexión.
+- Comprobar si responde, sin token: `Test-NetConnection 34.230.114.164 -Port 9000` (PowerShell) o
+  `nc -vz 34.230.114.164 9000`.
 - Lanzar Lince, desde `pokerfight-desarrollo/` (primero compilar y comprobar que `bin/lince` arranca):
 
   ```powershell
-  powershell -ExecutionPolicy Bypass -File bots\lince\correr.ps1 -Addr 32.201.29.142:9000 -Fase clasificatoria -Nuevo -Silencioso
+  powershell -ExecutionPolicy Bypass -File bots\lince\correr.ps1 -Addr 34.230.114.164:9000 -Fase clasificatoria -Nuevo -Silencioso
   ```
 
   Sin PowerShell (macOS o Linux), sin supervisor:
 
   ```bash
-  ./bin/lince -addr 32.201.29.142:9000 -fase clasificatoria -datos bots/lince/datos -silencioso
+  ./bin/lince -addr 34.230.114.164:9000 -fase clasificatoria -datos bots/lince/datos -silencioso
   ```
 
 - `-Fase clasificatoria` es obligatorio en el servidor de pruebas (ahí todos vuelven a 10 000 fichas en cada

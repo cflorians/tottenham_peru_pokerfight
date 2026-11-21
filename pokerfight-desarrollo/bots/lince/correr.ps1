@@ -15,7 +15,7 @@
   (Sin tildes a proposito: Windows PowerShell 5.1 lee los .ps1 sin BOM como ANSI.)
 
 .EXAMPLE
-  .\bots\lince\correr.ps1 -Addr 32.201.29.142:9000 -Token pfb-xxxx -Nuevo
+  .\bots\lince\correr.ps1 -Addr 34.230.114.164:9000 -Token pfb-xxxx -Nuevo
 
 .EXAMPLE
   $env:POKERFIGHT_TOKEN = 'pfb-xxxx'; .\bots\lince\correr.ps1 -Addr host:9000
