@@ -25,6 +25,7 @@ Resultados de pruebas y simulaciones del equipo. Los planes citan estos archivos
 | [`ensayo_reloj_seis_minutos.md`](ensayo_reloj_seis_minutos.md) | Reloj de seis minutos activado en una mesa local. Se liquidó la mano y coincidieron los cinco saldos de arrastre |
 | [`ensayo_corte_conexion_liga.md`](ensayo_corte_conexion_liga.md) | Liga local de 30 bots con corte de conexión en la primera ronda. Lince volvió a su silla y terminó la liga. La última mano quedó pendiente en el estado al apagar el ensayo |
 | [`ensayo_guardado_ultima_mano.md`](ensayo_guardado_ultima_mano.md) | Cuatro ligas locales con el orquestador ajustado. En las cuatro coincidió la última mano liquidada de Lince con la del estado final en disco |
+| [`ensayo_silencio_cuatro_horas.md`](ensayo_silencio_cuatro_horas.md) | 38 comprobaciones aprobadas tras la espera de 14 400 s. Lince volvió a jugar y recuperó su asiento tras reiniciar en ambas fases |
 | [`diagnostico_pago_corto.md`](diagnostico_pago_corto.md) | 8 000 ligas para medir en qué turnos cambiaría el cálculo del pago corto. Los cambios potenciales se concentraron en el campo agresivo |
 | [`genoma_clasificatoria_r.json`](genoma_clasificatoria_r.json) | Clasificatoria entrenada por el premio del bot entero y con campo realista. No supera a la v1.1; no se usa |
 

@@ -103,9 +103,12 @@ _Última actualización: vie 20/11/2026 (ensayos finales y preparación del paqu
 - **Guardado al cerrar el ensayo (20/11, Hans con Codex).** `liga-real` espera a que `estado.json` confirme
   la última mano liquidada de Lince. Se verificaron cuatro ligas locales con el candidato de entrega, incluida
   una eliminación con vuelta a la final. [Informe](Simulaciones/ensayo_guardado_ultima_mano.md).
+- **Silencio de cuatro horas (20/11, Hans con Codex).** El candidato pasó las 38 comprobaciones de
+  `robustez.py -silencio 14400`. Volvió a jugar tras la espera y recuperó su asiento al reiniciar en
+  clasificatoria y en la final. [Informe](Simulaciones/ensayo_silencio_cuatro_horas.md).
 - **Pendientes de entrega.** El 19/11 se consultó a la organización por el canal y la hora de entrega, la
-  conexión del torneo y la persistencia de perfiles. Quedan la respuesta y el resultado de la prueba de cuatro
-  horas de silencio. Ampliar la muestra de rivales de práctica para la siguiente evaluación de estrategia.
+  conexión del torneo y la persistencia de perfiles. Queda la respuesta. Ampliar la muestra de rivales de
+  práctica para la siguiente evaluación de estrategia.
 - Nombre del bot: **Lince** es un nombre de trabajo; se puede cambiar (es renombrar la carpeta y los imports).
 - **Equipo de 2 personas** (una con Claude Code, la otra con Codex) sobre un repositorio privado de GitHub.
   Las reglas de trabajo en equipo están en [`AGENTS.md`](AGENTS.md); el reparto, en la sección 4.
@@ -239,8 +242,8 @@ Somos 2: A y B avanzan **en paralelo** desde el viernes 13. Cada persona es due�
 - [x] v0 = todo lo anterior con `genoma_prudente.json`. Etiquetada.
 - [x] Prueba automática de robustez (`bots/lince/pruebas/robustez.py`): silencio, reconexión entre mesas,
       conteo de rondas, detección de la final y recuperación tras reiniciar el proceso en ambas fases.
-- [ ] Prueba de silencio de varias horas: `python bots/lince/pruebas/robustez.py -silencio 14400` (se probó
-      con 40 s y con 10 minutos).
+- [x] Prueba de silencio de varias horas: 38 comprobaciones aprobadas con `robustez.py -silencio 14400`.
+      [Informe](Simulaciones/ensayo_silencio_cuatro_horas.md).
 - [ ] Mandar por correo las preguntas de la sección 6.
 
 **Lo aprendido en la Fase 0** (cambia cosas de más adelante):
@@ -305,7 +308,8 @@ Las líneas base de cada plan (A1 y B1) se corren apenas esté el simulador.
 - [x] Verificar que `liga-real` espere a que se confirme el estado de la última mano antes de detener a Lince.
       Coincidieron los IDs esperados y guardados en cuatro ligas ([informe](Simulaciones/ensayo_guardado_ultima_mano.md)).
 - [ ] Probar el supervisor (`correr.ps1`) dentro de una liga completa con fichas arrastradas.
-- [ ] Resistencia: horas en silencio, mesas de 2 a 6, stacks de 500 a 60 000, rivales lentos (cerca de 5 s).
+- [ ] Completar la cobertura de resistencia con mesas de 2 a 6, stacks de 500 a 60 000 y rivales
+      que decidan cerca del límite de 5 s.
 - [x] Verificar la fase forzada en mesas de práctica con fichas reiniciadas y al retomar el estado guardado.
       Dos mesas locales de seis, de 50 manos cada una, quedaron como clasificatoria en disco y en el log.
       `robustez.py` pasó 21 de 21 comprobaciones, incluida la detección automática de la final y la recuperación
@@ -321,7 +325,8 @@ Las líneas base de cada plan (A1 y B1) se corren apenas esté el simulador.
       arrancó desde la carpeta de entrega y pasó las 38 comprobaciones de `robustez.py` con 40 s de silencio.
       En tres mesas de la arena (semillas 101 a 103) Lince tuvo cero timeouts.
 - [x] Preparar y verificar el ZIP de código y README de entrega.
-- [ ] **Congelar el código el viernes 20.** El sábado solo se corrigen errores y se entrega.
+- [x] **Fijar la versión de entrega el viernes 20.** Ejecutable de `6a5ac83` y ZIP fuente de `f0ae920`,
+      verificados. El sábado solo se corrigen errores y se entrega.
 
 ## 6. Preguntas para la organización (por correo ya; el resto, el domingo 15)
 
