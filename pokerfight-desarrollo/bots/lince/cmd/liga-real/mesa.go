@@ -54,6 +54,7 @@ type resultadoMesa struct {
 	FichasFin       map[string]int64        `json:"fichas_fin"`
 	Posiciones      []string                `json:"posiciones"` // Orden final de la mesa (1.º primero).
 	Manos           int                     `json:"manos"`
+	UltimaManoLince string                  `json:"ultima_mano_lince,omitempty"`
 	DuracionSeg     float64                 `json:"duracion_seg"`
 	CerradaPorReloj bool                    `json:"cerrada_por_reloj,omitempty"`
 	CorteDuro       bool                    `json:"corte_duro,omitempty"` // Se cortó a mitad de una mano: puede haber fichas perdidas.
@@ -92,6 +93,8 @@ type observadorMesa struct {
 	porReloj bool
 	ronda    int
 	mu       sync.Mutex
+
+	ultimaManoLince string
 }
 
 func (o *observadorMesa) ManoTerminada(m mesa.ManoJugada) {
@@ -99,6 +102,9 @@ func (o *observadorMesa) ManoTerminada(m mesa.ManoJugada) {
 	defer o.mu.Unlock()
 	o.manos++
 	for _, j := range m.Estado.Jugadores {
+		if j.ID == idLince && j.EnMano {
+			o.ultimaManoLince = m.IDMano
+		}
 		antes := o.saldos[j.ID]
 		if antes > 0 && j.Saldo == 0 {
 			o.quiebras[j.ID] = marcaQuiebra{Ronda: o.ronda, Mano: o.manos, StackAntes: antes}
@@ -261,6 +267,7 @@ func jugarMesaReal(ctx context.Context, cfg configMesaReal, ronda int, asientos 
 		time.Sleep(25 * time.Millisecond)
 	}
 	muConectados.Lock()
+	lincePresente := conectados[idLince]
 	for _, a := range asientos {
 		if !conectados[a.ID] {
 			res.Ausentes = append(res.Ausentes, a.ID)
@@ -292,6 +299,9 @@ func jugarMesaReal(ctx context.Context, cfg configMesaReal, ronda int, asientos 
 
 	obs.mu.Lock()
 	res.Manos = obs.manos
+	if lincePresente {
+		res.UltimaManoLince = obs.ultimaManoLince
+	}
 	res.CerradaPorReloj = obs.porReloj
 	res.Quiebras = obs.quiebras
 	obs.mu.Unlock()

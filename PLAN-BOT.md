@@ -9,7 +9,7 @@ Este archivo tiene lo común. La estrategia está en dos planes:
 
 ## Estado
 
-_Última actualización: mié 18/11/2026 (README y ejecutable candidato de entrega)._
+_Última actualización: vie 20/11/2026 (ensayos finales y preparación del paquete de entrega)._
 
 - Hecho: análisis de las bases y de la guía, 90 mesas de prueba en el formato real
   (`Simulaciones/pruebas_formato_real.md`), prueba del genoma prudente (`Simulaciones/genoma_prudente.json`)
@@ -88,10 +88,27 @@ _Última actualización: mié 18/11/2026 (README y ejecutable candidato de entre
   locales y los créditos. La compilación candidata de `master` (`6a5ac83`, Go 1.26.10, Windows x64) quedó en
   `pokerfight-desarrollo/bin/entrega/6a5ac83/lince.exe`. Su SHA-256 es
   `9bb6bb0b552bdab7336b799b9ee4d874142a523ef6bdaa718a0b5b008d6d8bf2`.
-- **Próximo paso**: ver rivales reales en el servidor de pruebas (decide si hay que cubrir también la
-  clasificatoria contra quien apuesta seguido), confirmar cuánto dura la final, y el ensayo general del jue 19.
-  De la política nueva (A3) ya se probó lo que parecía más barato y no rinde contra campos tipo kit. Falta avisar a la organización de las caídas del
-  servidor, el correo con las preguntas y la prueba de silencio larga.
+- **Validaciones del 19/11 (Hans con Codex).** El [reloj de seis minutos](Simulaciones/ensayo_reloj_seis_minutos.md)
+  cerró la mesa al liquidar la mano y entregó los cinco saldos correctos a la ronda siguiente. En la
+  [liga con corte TCP](Simulaciones/ensayo_corte_conexion_liga.md), Lince volvió al mismo asiento en 2,005 s
+  y la mesa volvió a aceptar sus jugadas. El estado final del ensayo quedó una mano atrás al cerrar el proceso.
+- **Diagnóstico de pago corto (19/11, Hans con Codex).** En el campo mixto hubo una jugada potencialmente distinta
+  en 6 de 2 000 clasificatorias. La mejora del premio sigue por medir. La política candidata es la actual.
+  [Datos por campo](Simulaciones/diagnostico_pago_corto.md).
+- **Paquete de entrega (20/11, Hans con Codex).** Se extrajo, compiló y probó la fuente de `f0ae920` con su
+  README. El ZIP local es `pokerfight-desarrollo/bin/entrega/Lince-f0ae920-fuente.zip`. Su SHA-256 es
+  `0a4d5c20a083612fa4f38ca58fae133f10b891c1d6c1e3bdd8e5806af4290399`.
+- **Práctica del 20/11 (Hans con Codex).** El candidato de entrega registró 179 manos en cuatro mesas y
+  guardó la ronda 4 como clasificatoria. Se cerró la sesión tras 90 s. [Informe](Simulaciones/servidor_pruebas_20261120.md).
+- **Guardado al cerrar el ensayo (20/11, Hans con Codex).** `liga-real` espera a que `estado.json` confirme
+  la última mano liquidada de Lince. Se verificaron cuatro ligas locales con el candidato de entrega, incluida
+  una eliminación con vuelta a la final. [Informe](Simulaciones/ensayo_guardado_ultima_mano.md).
+- **Silencio de cuatro horas (20/11, Hans con Codex).** El candidato pasó las 38 comprobaciones de
+  `robustez.py -silencio 14400`. Volvió a jugar tras la espera y recuperó su asiento al reiniciar en
+  clasificatoria y en la final. [Informe](Simulaciones/ensayo_silencio_cuatro_horas.md).
+- **Pendientes de entrega.** El 19/11 se consultó a la organización por el canal y la hora de entrega, la
+  conexión del torneo y la persistencia de perfiles. Queda la respuesta. Ampliar la muestra de rivales de
+  práctica para la siguiente evaluación de estrategia.
 - Nombre del bot: **Lince** es un nombre de trabajo; se puede cambiar (es renombrar la carpeta y los imports).
 - **Equipo de 2 personas** (una con Claude Code, la otra con Codex) sobre un repositorio privado de GitHub.
   Las reglas de trabajo en equipo están en [`AGENTS.md`](AGENTS.md); el reparto, en la sección 4.
@@ -225,8 +242,8 @@ Somos 2: A y B avanzan **en paralelo** desde el viernes 13. Cada persona es due�
 - [x] v0 = todo lo anterior con `genoma_prudente.json`. Etiquetada.
 - [x] Prueba automática de robustez (`bots/lince/pruebas/robustez.py`): silencio, reconexión entre mesas,
       conteo de rondas, detección de la final y recuperación tras reiniciar el proceso en ambas fases.
-- [ ] Prueba de silencio de varias horas: `python bots/lince/pruebas/robustez.py -silencio 14400` (se probó
-      con 40 s y con 10 minutos).
+- [x] Prueba de silencio de varias horas: 38 comprobaciones aprobadas con `robustez.py -silencio 14400`.
+      [Informe](Simulaciones/ensayo_silencio_cuatro_horas.md).
 - [ ] Mandar por correo las preguntas de la sección 6.
 
 **Lo aprendido en la Fase 0** (cambia cosas de más adelante):
@@ -284,24 +301,32 @@ Las líneas base de cada plan (A1 y B1) se corren apenas esté el simulador.
       `python -B bots/lince/pruebas/robustez.py` pasó las 38 comprobaciones, incluido el reinicio en la final.
 - [x] Forzar el cierre por reloj con límite reducido y verificar la conservación y el arrastre de fichas.
       Dos ligas locales de tres rondas ([informe](Simulaciones/ensayo_cierre_por_reloj.md)).
-- [ ] Verificar que `liga-real` espere a que se confirme el estado de la última mano antes de detener a Lince.
-- [ ] Quedan el supervisor (`correr.ps1`) dentro de una liga completa con fichas arrastradas, un corte de red
-      a mano y el tope de 6 minutos por mesa.
-- [ ] Resistencia: horas en silencio, mesas de 2 a 6, stacks de 500 a 60 000, rivales lentos (cerca de 5 s).
+- [x] Probar los seis minutos con rivales locales controlados y comprobar el arrastre de fichas.
+      [Informe](Simulaciones/ensayo_reloj_seis_minutos.md).
+- [x] Cortar la conexión TCP de Lince durante una liga local de diez rondas y comprobar su regreso a la mesa.
+      [Informe](Simulaciones/ensayo_corte_conexion_liga.md).
+- [x] Verificar que `liga-real` espere a que se confirme el estado de la última mano antes de detener a Lince.
+      Coincidieron los IDs esperados y guardados en cuatro ligas ([informe](Simulaciones/ensayo_guardado_ultima_mano.md)).
+- [ ] Probar el supervisor (`correr.ps1`) dentro de una liga completa con fichas arrastradas.
+- [ ] Completar la cobertura de resistencia con mesas de 2 a 6, stacks de 500 a 60 000 y rivales
+      que decidan cerca del límite de 5 s.
 - [x] Verificar la fase forzada en mesas de práctica con fichas reiniciadas y al retomar el estado guardado.
       Dos mesas locales de seis, de 50 manos cada una, quedaron como clasificatoria en disco y en el log.
       `robustez.py` pasó 21 de 21 comprobaciones, incluida la detección automática de la final y la recuperación
       tras un reinicio con la misma hora de inicio. La arena registró cero timeouts de Lince en tres mesas de
       cinco (`pruebas/mesas.py`, alineación A, semillas 101 a 103).
-- [ ] **Servidor de pruebas**. El token funcionó en la sesión del lun 16/11. Falta medir el ritmo y
-      **registrar cómo juegan más rivales** para recalibrar los campos de prueba de los dos planes.
+- [x] Probar el candidato de entrega en el servidor de práctica. Se registraron 179 manos en cuatro mesas
+      en 90 s ([informe](Simulaciones/servidor_pruebas_20261120.md)).
+- [ ] **Registrar cómo juegan más rivales** para recalibrar los campos de prueba de los dos planes.
 - [ ] `git pull` diario del kit, recompilar y releer `docs/competencia.md`.
 - [x] [README breve para el jurado](pokerfight-desarrollo/bots/lince/README-ENTREGA.md), con atribución a
       Gato Darwin y créditos a Claude Code y Codex.
 - [x] Probar el ejecutable candidato en Windows. La compilación, `go vet` y las pruebas de Go pasaron. El binario
       arrancó desde la carpeta de entrega y pasó las 38 comprobaciones de `robustez.py` con 40 s de silencio.
       En tres mesas de la arena (semillas 101 a 103) Lince tuvo cero timeouts.
-- [ ] **Congelar el código el viernes 20.** El sábado solo se corrigen errores y se entrega.
+- [x] Preparar y verificar el ZIP de código y README de entrega.
+- [x] **Fijar la versión de entrega el viernes 20.** Ejecutable de `6a5ac83` y ZIP fuente de `f0ae920`,
+      verificados. El sábado solo se corrigen errores y se entrega.
 
 ## 6. Preguntas para la organización (por correo ya; el resto, el domingo 15)
 

@@ -133,6 +133,7 @@ func jugarLiga(ctx context.Context, cfg configLiga, numero int, semilla uint64, 
 		indice[p.ID] = i
 	}
 	var jugadasLince []mesaDeLince
+	var manoNoGuardadaAlEliminar string
 	total := int64(n) * stackInicial
 
 	for ronda := 1; ronda <= cfg.Rondas; ronda++ {
@@ -210,7 +211,9 @@ func jugarLiga(ctx context.Context, cfg configLiga, numero int, semilla uint64, 
 				quiebras[indice[id]] = q
 			}
 			if tareas[k].conLince {
-				jugadasLince = append(jugadasLince, mesaDeLince{Jugadores: len(r.Jugadores), FichasLince: r.FichasInicio[idLince]})
+				jugadasLince = append(jugadasLince, mesaDeLince{
+					Jugadores: len(r.Jugadores), FichasLince: r.FichasInicio[idLince], UltimaMano: r.UltimaManoLince,
+				})
 				rl.TimeoutsLin = r.Timeouts[idLince]
 				inf.TimeoutsLince += r.Timeouts[idLince]
 				if len(r.Ausentes) > 0 {
@@ -247,7 +250,12 @@ func jugarLiga(ctx context.Context, cfg configLiga, numero int, semilla uint64, 
 
 		if fichas[0] == 0 && inf.RondaQuiebraLi == 0 && len(jugadasLince) > 0 {
 			inf.RondaQuiebraLi = ronda
+			mano := ultimaManoEsperada(jugadasLince)
+			lince.esperarGuardado(ctx, dirDatos, mano)
 			lince.Detener() // Eliminado: se termina su proceso.
+			if mano != "" && !estadoConfirmaMano(dirDatos, mano) {
+				manoNoGuardadaAlEliminar = mano
+			}
 		}
 		if !lince.Vivo() && fichas[0] > 0 {
 			inf.Chequeo.ProcesoMurioSol = true
@@ -331,7 +339,9 @@ func jugarLiga(ctx context.Context, cfg configLiga, numero int, semilla uint64, 
 			inf.Problemas = append(inf.Problemas, fmt.Sprintf("final: la suma de fichas es %d (debería ser %d)", suma, want))
 		}
 		if inf.LinceEnFinal {
-			jugadasLince = append(jugadasLince, mesaDeLince{Final: true, Jugadores: len(asientos), FichasLince: stackInicial})
+			jugadasLince = append(jugadasLince, mesaDeLince{
+				Final: true, Jugadores: len(asientos), FichasLince: stackInicial, UltimaMano: r.UltimaManoLince,
+			})
 			inf.TimeoutsLince += r.Timeouts[idLince]
 			for _, a := range r.Ausentes {
 				if a == idLince {
@@ -341,9 +351,15 @@ func jugarLiga(ctx context.Context, cfg configLiga, numero int, semilla uint64, 
 		}
 	}
 
+	lince.esperarGuardado(ctx, dirDatos, ultimaManoEsperada(jugadasLince))
 	murio := inf.Chequeo.ProcesoMurioSol || (inf.RondaQuiebraLi == 0 && !lince.Vivo())
 	lince.Detener()
 	inf.Chequeo = chequear(dirDatos, jugadasLince)
+	if manoNoGuardadaAlEliminar != "" && manoNoGuardadaAlEliminar != inf.Chequeo.UltimaManoEsperada {
+		inf.Chequeo.Diferencias = append(inf.Chequeo.Diferencias,
+			fmt.Sprintf("la mano %q quedó sin guardar al detener a Lince por eliminación", manoNoGuardadaAlEliminar))
+		inf.Chequeo.Coincide = false
+	}
 	inf.Chequeo.ProcesoMurioSol = murio
 	if murio {
 		inf.Problemas = append(inf.Problemas, "el proceso de Lince terminó solo antes de tiempo (ver lince-salida.log)")
