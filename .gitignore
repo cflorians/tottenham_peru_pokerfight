@@ -33,3 +33,24 @@ biblioteca.cache
 .DS_Store
 Thumbs.db
 .claude/settings.local.json
+
+# Material interno que se queda solo en el disco de cada uno (fuera de la entrega)
+/AGENTS.md
+/CLAUDE.md
+/PLAN-*.md
+/*.docx
+/pokerfight-arena-participantes/
+pokerfight-desarrollo/AGENTS.md
+pokerfight-desarrollo/CLAUDE.md
+pokerfight-desarrollo/pruebas-lince/r_*.txt
+pokerfight-desarrollo/bots/lince/README-ENTREGA.md
+/Simulaciones/*
+!/Simulaciones/a1_b1_linea_base.md
+!/Simulaciones/a2_b2_v1.md
+!/Simulaciones/b4_adaptacion_rival.md
+!/Simulaciones/ensayo_liga_real.md
+!/Simulaciones/ensayo_silencio_cuatro_horas.md
+!/Simulaciones/pruebas_formato_real.md
+!/Simulaciones/servidor_pruebas_20261121.md
+*.zip
+*.jsonl

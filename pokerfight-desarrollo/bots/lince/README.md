@@ -1,14 +1,13 @@
 # Lince · nuestro bot para PokerFight
 
-[README breve de entrega para el jurado](README-ENTREGA.md)
+[README de entrega para el jurado](../../../README.md)
 
 Nombre de trabajo; se puede cambiar. Parte de **Gato Darwin** (`bots/darwin`, de AICS PUCP): política con
 números evolucionados por un algoritmo genético y fuerza de la mano por Monte Carlo.
 
 **Versión actual: v1.2.** La política es la de Darwin, pero el genoma se entrenó con lo que premia el torneo
 (llegar a la final y terminar 1.º en ligas simuladas de 10 rondas) en vez de las fichas por mano, y alrededor
-está la infraestructura para aguantar el campeonato entero. Resultados: `Simulaciones/a2_b2_v1.md`. El plan está en `../../../PLAN-BOT.md` y las
-reglas de trabajo en equipo (ramas, PR, archivos compartidos, token) en `../../../AGENTS.md`.
+está la infraestructura para aguantar el campeonato entero. Resultados: `Simulaciones/a2_b2_v1.md`.
 
 ## Qué agrega sobre Darwin
 
@@ -147,7 +146,7 @@ powershell -ExecutionPolicy Bypass -File bots\lince\correr.ps1 -Addr HOST:PUERTO
 - `-Nuevo` aparta el estado guardado. **Solo al empezar un torneo**, nunca al relanzar a mitad.
 - En el **servidor de pruebas** agregar `-Fase clasificatoria`: ahí todos vuelven a 10 000 fichas en cada
   ronda, y una mesa de 6 se confundiría con la final.
-- El token se toma de la variable `POKERFIGHT_TOKEN` (ver cómo guardarla en `AGENTS.md`). No hace falta pasar
+- El token se toma de la variable `POKERFIGHT_TOKEN` (guardarla una vez: `[Environment]::SetEnvironmentVariable('POKERFIGHT_TOKEN', 'pfb-xxxx', 'User')`). No hace falta pasar
   `-Token`, y así no queda en la línea de comandos.
 
 Flags del bot:
