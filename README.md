@@ -85,7 +85,7 @@ Los dos genomas están incluidos en el binario.
 
 | Prueba | Resultado | Fuente |
 | --- | --- | --- |
-| Servidor de pruebas de la organización, sáb 21/11 | **+93 912 fichas en 853 manos** (+110 por mano), contra 7 rivales reales, sin timeouts ni acciones inválidas | [servidor_pruebas_20261121.md](Simulaciones/servidor_pruebas_20261121.md) |
+| Servidor de pruebas de la organización, sáb 21/11 | **80 mesas de 4 (3 866 manos): +4 184 fichas por mesa de media, 1.º en el 36 %, una sola quiebra (1,2 %)**, contra 7 rivales reales. Como torneos de 10 rondas, sobrevive en el 85-88 % (estimado con bootstrap). Un corte de conexión real se recuperó solo, en el primer intento | [servidor_pruebas_20261121.md](Simulaciones/servidor_pruebas_20261121.md) |
 | 15 torneos completos de 30 bots con los ejecutables reales del kit | Llegó a la final 12 veces y fue campeón 10. Contó bien las rondas y detectó la final en los 15 | [ensayo_liga_real.md](Simulaciones/ensayo_liga_real.md) |
 | Finales reales contra genomas nuestros entrenados (v1.2) | Ganó 10 de 20; la v1.1, 1 de 20 | [b4_adaptacion_rival.md](Simulaciones/b4_adaptacion_rival.md) |
 | Finales reales contra los bots del kit (v1.2) | 82,5 % de 40 | [b4_adaptacion_rival.md](Simulaciones/b4_adaptacion_rival.md) |
